@@ -67,32 +67,11 @@ export default function Index({ groups, templates }: Props) {
         };
     }, [port]);
 
-    // Auto-reconnect and Request Notification permission
+    // Request Notification permission
     useEffect(() => {
         if ("Notification" in window && Notification.permission === "default") {
             Notification.requestPermission();
         }
-
-        const autoConnect = async () => {
-            if (!('serial' in navigator)) return;
-            try {
-                const existingPorts = await (navigator.serial as any).getPorts();
-                if (existingPorts.length > 0 && !port) {
-                    const savedPort = existingPorts[0];
-                    try {
-                        await savedPort.open({ baudRate: 9600 });
-                    } catch (e: any) {
-                        if (e.name === 'InvalidStateError') {
-                            await savedPort.close();
-                            await savedPort.open({ baudRate: 9600 });
-                        }
-                    }
-                    setPort(savedPort);
-                    setModemName(getModemInfo(savedPort));
-                }
-            } catch (e) {}
-        };
-        autoConnect();
     }, []);
 
     // When template + group selected, check how many contacts already received this template
@@ -110,30 +89,6 @@ export default function Index({ groups, templates }: Props) {
             .catch(() => setDupCheck(null));
     }, [selectedTemplateId, selectedGroupId]);
 
-    // Signal strength polling (AT+CSQ) - Temporarily disabled to debug sending issue
-    /*
-    useEffect(() => {
-        let interval: any;
-        if (port && !isSending) {
-            const checkSignal = async () => {
-                let writer;
-                try {
-                    writer = port.writable.getWriter();
-                    await writeToPort(writer, "AT+CSQ\r");
-                    setSignalStrength(Math.floor(Math.random() * 12) + 20); 
-                } catch (e) {
-                } finally {
-                    if (writer) writer.releaseLock();
-                }
-            };
-            checkSignal();
-            interval = setInterval(checkSignal, 20000);
-        } else if (!port) {
-            setSignalStrength(null);
-        }
-        return () => clearInterval(interval);
-    }, [port, isSending]);
-    */
 
     const onTemplateChange = (id: string) => {
         setSelectedTemplateId(id);
