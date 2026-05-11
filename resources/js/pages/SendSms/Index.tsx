@@ -286,20 +286,23 @@ export default function Index({ groups, templates }: Props) {
                     name: contact.name ?? undefined,
                 }]);
 
+                // Replace placeholders
+                const personalizedMessage = messageBody.replace(/\[name\]/gi, contact.name || '');
+
                 let status: 'sent' | 'failed' = 'sent';
                 try {
                     await writeToPort(writer, "AT+CMGF=1\r");
                     await delay(1000);
                     await writeToPort(writer, `AT+CMGS="${contact.phone}"\r`);
                     await delay(1000);
-                    await writeToPort(writer, `${messageBody}\x1A`);
+                    await writeToPort(writer, `${personalizedMessage}\x1A`);
                     await delay(2000);
                 } catch (err) {
                     console.error("SMS yuborishda xato: " + contact.phone, err);
                     status = 'failed';
                 }
 
-                results.push({ contact_id: contact.id, status, message_body: messageBody });
+                results.push({ contact_id: contact.id, status, message_body: personalizedMessage });
 
                 // Update row with final status
                 setSentResults(prev => prev.map((r) =>
