@@ -35,7 +35,7 @@ const statusColors: Record<string, string> = {
     pending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
 };
 
-export default function Dashboard({ stats, recent_history }: Props) {
+export default function Dashboard({ stats, daily_stats, recent_history }: Props) {
     const { t } = useTranslate();
     const breadcrumbs: BreadcrumbItem[] = [
         { title: t('Dashboard'), href: '/dashboard' },
