@@ -13,7 +13,9 @@ class SocialiteController extends Controller
 {
     public function redirect()
     {
-        return Socialite::driver('google')->redirect();
+        return Socialite::driver('google')
+            ->with(['prompt' => 'select_account'])
+            ->redirect();
     }
 
     public function callback()
@@ -36,6 +38,7 @@ class SocialiteController extends Controller
 
             return redirect()->intended(route('dashboard', absolute: false));
         } catch (\Exception $e) {
+            \Log::error('Socialite error: ' . $e->getMessage());
             return redirect()->route('login')->with('error', __('Google login error'));
         }
     }
