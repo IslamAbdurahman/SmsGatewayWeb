@@ -270,6 +270,9 @@ export default function Index({ groups, templates }: Props) {
 
         let writer;
         try {
+            if (!port.writable) {
+                throw new Error("Port is not writable. Please try to disconnect and connect the modem again.");
+            }
             writer = port.writable.getWriter();
 
             for (let i = 0; i < newContacts.length; i++) {
