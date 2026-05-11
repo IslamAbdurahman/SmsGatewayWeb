@@ -14,6 +14,7 @@ class SocialiteController extends Controller
     public function redirect()
     {
         return Socialite::driver('google')
+            ->stateless()
             ->with(['prompt' => 'select_account'])
             ->redirect();
     }
@@ -21,7 +22,7 @@ class SocialiteController extends Controller
     public function callback()
     {
         try {
-            $googleUser = Socialite::driver('google')->user();
+            $googleUser = Socialite::driver('google')->stateless()->user();
             
             $user = User::updateOrCreate([
                 'email' => $googleUser->email,
@@ -33,8 +34,6 @@ class SocialiteController extends Controller
                 // Password remains unchanged if user exists, otherwise it stays null or we set a random one
                 // Since we made password nullable in migration, null is fine.
             ]);
-
-            dd($user);
 
             Auth::login($user);
 
