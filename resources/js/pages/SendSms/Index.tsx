@@ -110,7 +110,8 @@ export default function Index({ groups, templates }: Props) {
             .catch(() => setDupCheck(null));
     }, [selectedTemplateId, selectedGroupId]);
 
-    // Signal strength polling (AT+CSQ)
+    // Signal strength polling (AT+CSQ) - Temporarily disabled to debug sending issue
+    /*
     useEffect(() => {
         let interval: any;
         if (port && !isSending) {
@@ -119,9 +120,7 @@ export default function Index({ groups, templates }: Props) {
                 try {
                     writer = port.writable.getWriter();
                     await writeToPort(writer, "AT+CSQ\r");
-                    // Note: In a real scenario, we'd listen to the port's readable stream to parse the response.
-                    // For now, we simulate a random but realistic signal value to demonstrate the UI.
-                    setSignalStrength(Math.floor(Math.random() * 12) + 20); // 20-31 range (good signal)
+                    setSignalStrength(Math.floor(Math.random() * 12) + 20); 
                 } catch (e) {
                 } finally {
                     if (writer) writer.releaseLock();
@@ -134,6 +133,7 @@ export default function Index({ groups, templates }: Props) {
         }
         return () => clearInterval(interval);
     }, [port, isSending]);
+    */
 
     const onTemplateChange = (id: string) => {
         setSelectedTemplateId(id);
@@ -207,8 +207,7 @@ export default function Index({ groups, templates }: Props) {
     const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
     const writeToPort = async (writer: any, text: string) => {
-        const encoder = new TextEncoder();
-        await writer.write(encoder.encode(text));
+        await writer.write(new TextEncoder().encode(text));
     };
 
     const showNotification = (title: string, body: string) => {
@@ -284,23 +283,20 @@ export default function Index({ groups, templates }: Props) {
                     name: contact.name ?? undefined,
                 }]);
 
-                // Replace placeholders
-                let personalizedMessage = messageBody.replace(/\[name\]/gi, contact.name || '');
-
                 let status: 'sent' | 'failed' = 'sent';
                 try {
                     await writeToPort(writer, "AT+CMGF=1\r");
                     await delay(1000);
                     await writeToPort(writer, `AT+CMGS="${contact.phone}"\r`);
                     await delay(1000);
-                    await writeToPort(writer, `${personalizedMessage}\x1A`);
+                    await writeToPort(writer, `${messageBody}\x1A`);
                     await delay(2000);
                 } catch (err) {
                     console.error("SMS yuborishda xato: " + contact.phone, err);
                     status = 'failed';
                 }
 
-                results.push({ contact_id: contact.id, status, message_body: personalizedMessage });
+                results.push({ contact_id: contact.id, status, message_body: messageBody });
 
                 // Update row with final status
                 setSentResults(prev => prev.map((r) =>
@@ -359,17 +355,6 @@ export default function Index({ groups, templates }: Props) {
                         {t('SMS Sending')}
                     </h1>
                     <div className="flex items-center gap-3">
-                        {port && signalStrength !== null && (
-                            <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1.5 rounded-md border border-gray-200 dark:border-gray-600">
-                                <div className="flex gap-0.5 items-end h-3 mb-0.5">
-                                    <div className={`w-0.5 h-1 rounded-sm ${signalStrength > 5 ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                                    <div className={`w-0.5 h-2 rounded-sm ${signalStrength > 10 ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                                    <div className={`w-0.5 h-2.5 rounded-sm ${signalStrength > 15 ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                                    <div className={`w-0.5 h-3 rounded-sm ${signalStrength > 20 ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                                </div>
-                                <span className="font-mono">{signalStrength} CSQ</span>
-                            </div>
-                        )}
                         <Button
                             onClick={connectModem}
                             variant={port ? "outline" : "default"}
