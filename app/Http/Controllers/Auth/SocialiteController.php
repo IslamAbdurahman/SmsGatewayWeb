@@ -34,6 +34,8 @@ class SocialiteController extends Controller
                 // Since we made password nullable in migration, null is fine.
             ]);
 
+            dd($user);
+
             Auth::login($user);
 
             return redirect()->intended(route('dashboard', absolute: false));
