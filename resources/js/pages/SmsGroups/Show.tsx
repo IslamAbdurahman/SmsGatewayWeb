@@ -1,0 +1,378 @@
+import { useState, useRef } from 'react';
+import AppLayout from '@/layouts/app-layout';
+import { Head, useForm, Link, usePage } from '@inertiajs/react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { type BreadcrumbItem, type SmsGroup, type SmsContact } from '@/types';
+import { Pencil, Trash2, Plus, ArrowLeft, Upload, FileSpreadsheet, Download, Save, X } from 'lucide-react';
+import { PhoneInput } from '@/components/phone-input';
+import { formatPhoneNumberIntl } from 'react-phone-number-input';
+
+interface Props {
+    group: SmsGroup;
+    contacts: SmsContact[];
+}
+
+export default function Show({ group, contacts }: Props) {
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'SMS Guruhlar', href: '/sms-groups' },
+        { title: group.name, href: `/sms-groups/${group.id}` },
+    ];
+
+    const { flash } = usePage<any>().props;
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [importOpen, setImportOpen] = useState(false);
+    const [createOpen, setCreateOpen] = useState(false);
+    const [editContactOpen, setEditContactOpen] = useState(false);
+    const [editingContact, setEditingContact] = useState<SmsContact | null>(null);
+    const [deleteOpen, setDeleteOpen] = useState(false);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [editGroupName, setEditGroupName] = useState(false);
+
+    // Group name edit form
+    const { data: groupForm, setData: setGroupForm, put: putGroup, processing: savingGroup, errors: groupErrors, reset: resetGroup } = useForm({
+        name: group.name,
+    });
+
+    // Import form
+    const { data: importData, setData: setImportData, post: postImport, processing: importing, reset: resetImport, errors: importErrors } = useForm({
+        file: null as File | null,
+    });
+
+    // Create contact form
+    const { data: contactData, setData: setContactData, post: postContact, reset: resetContact, processing: savingContact, errors: contactErrors } = useForm({
+        group_id: String(group.id),
+        phone: '',
+        name: '',
+    });
+
+    // Edit contact form
+    const { data: editData, setData: setEditData, put: putContact, processing: savingEdit, errors: editErrors, reset: resetEdit } = useForm({
+        phone: '',
+        name: '',
+        group_id: String(group.id),
+    });
+
+    const submitGroup = (e: React.FormEvent) => {
+        e.preventDefault();
+        putGroup(`/sms-groups/${group.id}`, {
+            onSuccess: () => setEditGroupName(false),
+        });
+    };
+
+    const submitContact = (e: React.FormEvent) => {
+        e.preventDefault();
+        postContact('/contacts', {
+            onSuccess: () => {
+                resetContact();
+                setCreateOpen(false);
+            },
+        });
+    };
+
+    const openEditContact = (contact: SmsContact) => {
+        setEditingContact(contact);
+        setEditData({ phone: contact.phone, name: contact.name ?? '', group_id: String(group.id) });
+        setEditContactOpen(true);
+    };
+
+    const submitEditContact = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingContact) return;
+        putContact(`/contacts/${editingContact.id}`, {
+            onSuccess: () => {
+                resetEdit();
+                setEditContactOpen(false);
+                setEditingContact(null);
+            },
+        });
+    };
+
+    const handleImport = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!importData.file) return;
+        postImport(`/sms-groups/${group.id}/import`, {
+            onSuccess: () => {
+                resetImport();
+                setImportOpen(false);
+                if (fileInputRef.current) fileInputRef.current.value = '';
+            },
+        });
+    };
+
+    const confirmDelete = (id: number) => {
+        setDeletingId(id);
+        setDeleteOpen(true);
+    };
+
+    const { delete: destroy } = useForm();
+    const handleDelete = () => {
+        if (!deletingId) return;
+        destroy(`/contacts/${deletingId}`, {
+            onSuccess: () => {
+                setDeleteOpen(false);
+                setDeletingId(null);
+            },
+        });
+    };
+
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title={`${group.name} - Kontaktlar`} />
+            <div className="p-6">
+                {/* Header */}
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div className="flex items-center gap-4">
+                        <Link href="/sms-groups" className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-800">
+                            <ArrowLeft className="h-5 w-5" />
+                        </Link>
+                        <div>
+                            {editGroupName ? (
+                                <form onSubmit={submitGroup} className="flex items-center gap-2">
+                                    <Input
+                                        value={groupForm.name}
+                                        onChange={e => setGroupForm('name', e.target.value)}
+                                        className="h-8 text-xl font-bold"
+                                        autoFocus
+                                    />
+                                    <Button type="submit" size="sm" disabled={savingGroup}>
+                                        <Save className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => { setEditGroupName(false); resetGroup(); }}
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                    {groupErrors.name && (
+                                        <p className="text-xs text-red-500">{groupErrors.name}</p>
+                                    )}
+                                </form>
+                            ) : (
+                                <div className="flex items-center gap-2">
+                                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{group.name}</h1>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setEditGroupName(true)}
+                                        className="h-7 w-7 p-0 text-gray-400 hover:text-gray-700"
+                                    >
+                                        <Pencil className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            )}
+                            <p className="text-sm text-gray-500">{contacts.length} ta kontakt</p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        {/* Excel Import Dialog */}
+                        <Dialog open={importOpen} onOpenChange={setImportOpen}>
+                            <DialogTrigger asChild>
+                                <Button variant="outline" className="gap-2">
+                                    <Upload className="h-4 w-4" /> Excel Import
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent aria-describedby={undefined} className="dark:bg-gray-800">
+                                <DialogHeader>
+                                    <DialogTitle>Excel orqali kontakt yuklash</DialogTitle>
+                                </DialogHeader>
+                                <form onSubmit={handleImport} className="space-y-4">
+                                    <div className="rounded-lg border-2 border-dashed p-6 text-center">
+                                        <FileSpreadsheet className="mx-auto h-12 w-12 text-gray-400" />
+                                        <div className="mt-2 text-sm text-gray-600">
+                                            <label className="cursor-pointer font-semibold text-blue-600 hover:text-blue-500">
+                                                Faylni tanlang
+                                                <input
+                                                    type="file"
+                                                    ref={fileInputRef}
+                                                    className="sr-only"
+                                                    accept=".xlsx,.xls,.csv"
+                                                    onChange={e => setImportData('file', e.target.files?.[0] || null)}
+                                                />
+                                            </label>
+                                            <p className="mt-1 text-xs text-gray-500">XLSX, XLS yoki CSV (max 10MB)</p>
+                                        </div>
+                                        {importData.file && (
+                                            <p className="mt-2 text-sm font-medium text-green-600">{importData.file.name}</p>
+                                        )}
+                                    </div>
+                                    <div className="flex items-center justify-between rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
+                                        <p className="text-xs text-blue-700 dark:text-blue-300">
+                                            <strong>Eslatma:</strong> Birinchi ustun telefon, ikkinchi ustun ism (ixtiyoriy).
+                                        </p>
+                                        <a
+                                            href="/sms-groups/download-template"
+                                            className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400"
+                                            download
+                                        >
+                                            <Download className="h-3 w-3" /> Shablon
+                                        </a>
+                                    </div>
+                                    {importErrors.file && <p className="text-sm text-red-500">{importErrors.file}</p>}
+                                    <Button type="submit" className="w-full" disabled={importing || !importData.file}>
+                                        {importing ? 'Yuklanmoqda...' : 'Yuklashni boshlash'}
+                                    </Button>
+                                </form>
+                            </DialogContent>
+                        </Dialog>
+
+                        {/* Create Contact Dialog */}
+                        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+                            <DialogTrigger asChild>
+                                <Button className="gap-2">
+                                    <Plus className="h-4 w-4" /> Kontakt qo'shish
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent aria-describedby={undefined} className="dark:bg-gray-800">
+                                <DialogHeader>
+                                    <DialogTitle>Yangi kontakt</DialogTitle>
+                                </DialogHeader>
+                                <form onSubmit={submitContact} className="space-y-3">
+                                    <div>
+                                        <Input
+                                            placeholder="Ism (ixtiyoriy)"
+                                            value={contactData.name}
+                                            onChange={e => setContactData('name', e.target.value)}
+                                        />
+                                        {contactErrors.name && <p className="mt-1 text-xs text-red-500">{contactErrors.name}</p>}
+                                    </div>
+                                    <div>
+                                        <PhoneInput
+                                            value={contactData.phone}
+                                            onChange={val => setContactData('phone', val)}
+                                        />
+                                        {contactErrors.phone && <p className="mt-1 text-xs text-red-500">{contactErrors.phone}</p>}
+                                    </div>
+                                    {contactErrors.group_id && <p className="text-xs text-red-500">{contactErrors.group_id}</p>}
+                                    <Button type="submit" className="w-full" disabled={savingContact}>
+                                        {savingContact ? 'Saqlanmoqda...' : 'Saqlash'}
+                                    </Button>
+                                </form>
+                            </DialogContent>
+                        </Dialog>
+                    </div>
+                </div>
+
+                {/* Flash Messages for Import Stats */}
+                {flash && flash.imported !== undefined && (
+                    <div className="mt-6">
+                        <Alert className="border-green-500/50 bg-green-50/50 dark:bg-green-900/10">
+                            <AlertTitle className="text-green-700 dark:text-green-400">Yuklash yakunlandi!</AlertTitle>
+                            <AlertDescription className="text-sm text-green-600 dark:text-green-300">
+                                <ul className="list-inside list-disc mt-1">
+                                    <li>Muvaffaqiyatli: <b>{flash.imported}</b> ta</li>
+                                    <li>O'tkazib yuborildi (xato format): <b>{flash.skipped}</b> ta</li>
+                                    <li>Dublikatlar: <b>{flash.duplicates}</b> ta</li>
+                                </ul>
+                            </AlertDescription>
+                        </Alert>
+                    </div>
+                )}
+
+                {/* Contact Table */}
+                <div className="mt-8 overflow-hidden rounded-xl border bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                    <table className="w-full text-left text-sm">
+                        <thead className="bg-gray-50 text-gray-700 dark:bg-gray-700/50 dark:text-gray-300">
+                            <tr>
+                                <th className="px-6 py-4 font-medium">Ism</th>
+                                <th className="px-6 py-4 font-medium">Telefon</th>
+                                <th className="px-6 py-4 font-medium text-right">Amallar</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                            {contacts.length === 0 ? (
+                                <tr>
+                                    <td colSpan={3} className="px-6 py-12 text-center text-gray-500">
+                                        Hali kontaktlar yo'q. Excel orqali yoki qo'lda qo'shishingiz mumkin.
+                                    </td>
+                                </tr>
+                            ) : (
+                                contacts.map((contact) => (
+                                    <tr key={contact.id} className="transition hover:bg-gray-50/50 dark:hover:bg-gray-700/50">
+                                        <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
+                                            {contact.name || <span className="italic text-gray-400">Nomsiz</span>}
+                                        </td>
+                                        <td className="px-6 py-4 text-gray-600 dark:text-gray-400">
+                                            {formatPhoneNumberIntl(contact.phone) || contact.phone}
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <div className="flex justify-end gap-1">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => openEditContact(contact)}
+                                                    className="text-blue-500 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-900/20"
+                                                >
+                                                    <Pencil className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="text-red-500 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-900/20"
+                                                    onClick={() => confirmDelete(contact.id)}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Edit Contact Dialog */}
+                <Dialog open={editContactOpen} onOpenChange={setEditContactOpen}>
+                    <DialogContent aria-describedby={undefined} className="dark:bg-gray-800">
+                        <DialogHeader>
+                            <DialogTitle>Kontaktni tahrirlash</DialogTitle>
+                        </DialogHeader>
+                        <form onSubmit={submitEditContact} className="space-y-3">
+                            <div>
+                                <Input
+                                    placeholder="Ism (ixtiyoriy)"
+                                    value={editData.name}
+                                    onChange={e => setEditData('name', e.target.value)}
+                                />
+                                {editErrors.name && <p className="mt-1 text-xs text-red-500">{editErrors.name}</p>}
+                            </div>
+                            <div>
+                                <PhoneInput
+                                    value={editData.phone}
+                                    onChange={val => setEditData('phone', val)}
+                                />
+                                {editErrors.phone && <p className="mt-1 text-xs text-red-500">{editErrors.phone}</p>}
+                            </div>
+                            <Button type="submit" className="w-full" disabled={savingEdit}>
+                                {savingEdit ? 'Yangilanmoqda...' : 'Yangilash'}
+                            </Button>
+                        </form>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Delete Confirm Modal */}
+                <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+                    <DialogContent aria-describedby={undefined} className="dark:bg-gray-800">
+                        <DialogHeader>
+                            <DialogTitle>Kontaktni o'chirish</DialogTitle>
+                        </DialogHeader>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                            Haqiqatan ham ushbu kontaktni o'chirmoqchimisiz?
+                        </p>
+                        <div className="mt-4 flex justify-end gap-2">
+                            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Bekor qilish</Button>
+                            <Button variant="destructive" onClick={handleDelete}>O'chirish</Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            </div>
+        </AppLayout>
+    );
+}
