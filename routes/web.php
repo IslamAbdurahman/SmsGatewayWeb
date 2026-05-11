@@ -32,6 +32,17 @@ Route::middleware(['auth'])->group(function () {
             $historyQuery->where('user_id', $userId);
         }
 
+        $dailyStats = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = today()->subDays($i);
+            $dailyStats[] = [
+                'date'   => $date->format('Y-m-d'),
+                'label'  => $date->format('d-M'),
+                'sent'   => (clone $historyQuery)->whereDate('sent_at', $date)->where('status', 'sent')->count(),
+                'failed' => (clone $historyQuery)->whereDate('sent_at', $date)->where('status', 'failed')->count(),
+            ];
+        }
+
         return Inertia::render('dashboard', [
             'stats' => [
                 'groups'     => $groupsCount,
@@ -41,6 +52,7 @@ Route::middleware(['auth'])->group(function () {
                 'pending'    => (clone $historyQuery)->where('status', 'pending')->count(),
                 'failed'     => (clone $historyQuery)->where('status', 'failed')->count(),
             ],
+            'daily_stats' => $dailyStats,
             'recent_history' => SmsHistoryResource::collection(
                 (clone $historyQuery)->with(['contact', 'template'])->latest('sent_at')->limit(5)->get()
             ),
@@ -65,12 +77,13 @@ require __DIR__.'/settings.php';
 Route::middleware('guest')->group(function () {
     Route::get('auth/google', [App\Http\Controllers\Auth\SocialiteController::class, 'redirect'])->name('google.redirect');
     Route::get('auth/google/callback', [App\Http\Controllers\Auth\SocialiteController::class, 'callback'])->name('google.callback');
-    Route::get('lang/{locale}', function ($locale) {
-        if (in_array($locale, ['uz', 'ru', 'en'])) {
-            session()->put('locale', $locale);
-        }
-        return redirect()->back();
-    })->name('lang.switch');
 });
+
+Route::get('lang/{locale}', function ($locale) {
+    if (in_array($locale, ['uz', 'ru', 'en'])) {
+        session()->put('locale', $locale);
+    }
+    return redirect()->back();
+})->name('lang.switch');
 
 require __DIR__.'/auth.php';

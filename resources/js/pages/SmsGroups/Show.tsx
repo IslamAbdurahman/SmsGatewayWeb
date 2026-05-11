@@ -9,6 +9,7 @@ import { type BreadcrumbItem, type SmsGroup, type SmsContact } from '@/types';
 import { Pencil, Trash2, Plus, ArrowLeft, Upload, FileSpreadsheet, Download, Save, X } from 'lucide-react';
 import { PhoneInput } from '@/components/phone-input';
 import { formatPhoneNumberIntl } from 'react-phone-number-input';
+import { useTranslate } from '@/hooks/use-translate';
 
 interface Props {
     group: SmsGroup;
@@ -16,8 +17,9 @@ interface Props {
 }
 
 export default function Show({ group, contacts }: Props) {
+    const { t } = useTranslate();
     const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'SMS Guruhlar', href: '/sms-groups' },
+        { title: t('SMS Groups'), href: '/sms-groups' },
         { title: group.name, href: `/sms-groups/${group.id}` },
     ];
 
@@ -121,7 +123,7 @@ export default function Show({ group, contacts }: Props) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`${group.name} - Kontaktlar`} />
+            <Head title={`${group.name} - ${t('Contacts')}`} />
             <div className="p-6">
                 {/* Header */}
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -166,7 +168,7 @@ export default function Show({ group, contacts }: Props) {
                                     </Button>
                                 </div>
                             )}
-                            <p className="text-sm text-gray-500">{contacts.length} ta kontakt</p>
+                            <p className="text-sm text-gray-500">{contacts.length} {t('records')}</p>
                         </div>
                     </div>
 
@@ -175,19 +177,19 @@ export default function Show({ group, contacts }: Props) {
                         <Dialog open={importOpen} onOpenChange={setImportOpen}>
                             <DialogTrigger asChild>
                                 <Button variant="outline" className="gap-2">
-                                    <Upload className="h-4 w-4" /> Excel Import
+                                    <Upload className="h-4 w-4" /> {t('Excel Import')}
                                 </Button>
                             </DialogTrigger>
                             <DialogContent aria-describedby={undefined} className="dark:bg-gray-800">
                                 <DialogHeader>
-                                    <DialogTitle>Excel orqali kontakt yuklash</DialogTitle>
+                                    <DialogTitle>{t('Import Contacts via Excel')}</DialogTitle>
                                 </DialogHeader>
                                 <form onSubmit={handleImport} className="space-y-4">
                                     <div className="rounded-lg border-2 border-dashed p-6 text-center">
                                         <FileSpreadsheet className="mx-auto h-12 w-12 text-gray-400" />
                                         <div className="mt-2 text-sm text-gray-600">
                                             <label className="cursor-pointer font-semibold text-blue-600 hover:text-blue-500">
-                                                Faylni tanlang
+                                                {t('Select File')}
                                                 <input
                                                     type="file"
                                                     ref={fileInputRef}
@@ -196,7 +198,7 @@ export default function Show({ group, contacts }: Props) {
                                                     onChange={e => setImportData('file', e.target.files?.[0] || null)}
                                                 />
                                             </label>
-                                            <p className="mt-1 text-xs text-gray-500">XLSX, XLS yoki CSV (max 10MB)</p>
+                                            <p className="mt-1 text-xs text-gray-500">{t('XLSX, XLS or CSV (max 10MB)')}</p>
                                         </div>
                                         {importData.file && (
                                             <p className="mt-2 text-sm font-medium text-green-600">{importData.file.name}</p>
@@ -204,19 +206,19 @@ export default function Show({ group, contacts }: Props) {
                                     </div>
                                     <div className="flex items-center justify-between rounded-lg bg-blue-50 p-3 dark:bg-blue-900/20">
                                         <p className="text-xs text-blue-700 dark:text-blue-300">
-                                            <strong>Eslatma:</strong> Birinchi ustun telefon, ikkinchi ustun ism (ixtiyoriy).
+                                            <strong>{t('Note')}:</strong> {t('First column phone, second column name (optional).')}
                                         </p>
                                         <a
                                             href="/sms-groups/download-template"
                                             className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400"
                                             download
                                         >
-                                            <Download className="h-3 w-3" /> Shablon
+                                            <Download className="h-3 w-3" /> {t('Template')}
                                         </a>
                                     </div>
                                     {importErrors.file && <p className="text-sm text-red-500">{importErrors.file}</p>}
                                     <Button type="submit" className="w-full" disabled={importing || !importData.file}>
-                                        {importing ? 'Yuklanmoqda...' : 'Yuklashni boshlash'}
+                                        {importing ? t('Uploading...') : t('Start Upload')}
                                     </Button>
                                 </form>
                             </DialogContent>
@@ -226,12 +228,12 @@ export default function Show({ group, contacts }: Props) {
                         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
                             <DialogTrigger asChild>
                                 <Button className="gap-2">
-                                    <Plus className="h-4 w-4" /> Kontakt qo'shish
+                                    <Plus className="h-4 w-4" /> {t('Add Contact')}
                                 </Button>
                             </DialogTrigger>
                             <DialogContent aria-describedby={undefined} className="dark:bg-gray-800">
                                 <DialogHeader>
-                                    <DialogTitle>Yangi kontakt</DialogTitle>
+                                    <DialogTitle>{t('New Contact')}</DialogTitle>
                                 </DialogHeader>
                                 <form onSubmit={submitContact} className="space-y-3">
                                     <div>
@@ -251,7 +253,7 @@ export default function Show({ group, contacts }: Props) {
                                     </div>
                                     {contactErrors.group_id && <p className="text-xs text-red-500">{contactErrors.group_id}</p>}
                                     <Button type="submit" className="w-full" disabled={savingContact}>
-                                        {savingContact ? 'Saqlanmoqda...' : 'Saqlash'}
+                                        {savingContact ? t('Saving...') : t('Save')}
                                     </Button>
                                 </form>
                             </DialogContent>
@@ -263,12 +265,12 @@ export default function Show({ group, contacts }: Props) {
                 {flash && flash.imported !== undefined && (
                     <div className="mt-6">
                         <Alert className="border-green-500/50 bg-green-50/50 dark:bg-green-900/10">
-                            <AlertTitle className="text-green-700 dark:text-green-400">Yuklash yakunlandi!</AlertTitle>
+                            <AlertTitle className="text-green-700 dark:text-green-400">{t('Import Completed!')}</AlertTitle>
                             <AlertDescription className="text-sm text-green-600 dark:text-green-300">
                                 <ul className="list-inside list-disc mt-1">
-                                    <li>Muvaffaqiyatli: <b>{flash.imported}</b> ta</li>
-                                    <li>O'tkazib yuborildi (xato format): <b>{flash.skipped}</b> ta</li>
-                                    <li>Dublikatlar: <b>{flash.duplicates}</b> ta</li>
+                                    <li>{t('Successful')}: <b>{flash.imported}</b> {t('records')}</li>
+                                    <li>{t('Skipped (invalid format)')}: <b>{flash.skipped}</b> {t('records')}</li>
+                                    <li>{t('Duplicates')}: <b>{flash.duplicates}</b> {t('records')}</li>
                                 </ul>
                             </AlertDescription>
                         </Alert>
@@ -280,23 +282,23 @@ export default function Show({ group, contacts }: Props) {
                     <table className="w-full text-left text-sm">
                         <thead className="bg-gray-50 text-gray-700 dark:bg-gray-700/50 dark:text-gray-300">
                             <tr>
-                                <th className="px-6 py-4 font-medium">Ism</th>
-                                <th className="px-6 py-4 font-medium">Telefon</th>
-                                <th className="px-6 py-4 font-medium text-right">Amallar</th>
+                                <th className="px-6 py-4 font-medium">{t('Name')}</th>
+                                <th className="px-6 py-4 font-medium">{t('Phone')}</th>
+                                <th className="px-6 py-4 font-medium text-right">{t('Actions')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                             {contacts.length === 0 ? (
                                 <tr>
                                     <td colSpan={3} className="px-6 py-12 text-center text-gray-500">
-                                        Hali kontaktlar yo'q. Excel orqali yoki qo'lda qo'shishingiz mumkin.
+                                        {t('No contacts yet. You can add them via Excel or manually.')}
                                     </td>
                                 </tr>
                             ) : (
                                 contacts.map((contact) => (
                                     <tr key={contact.id} className="transition hover:bg-gray-50/50 dark:hover:bg-gray-700/50">
                                         <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                                            {contact.name || <span className="italic text-gray-400">Nomsiz</span>}
+                                            {contact.name || <span className="italic text-gray-400">{t('No Name')}</span>}
                                         </td>
                                         <td className="px-6 py-4 text-gray-600 dark:text-gray-400">
                                             {formatPhoneNumberIntl(contact.phone) || contact.phone}
@@ -332,7 +334,7 @@ export default function Show({ group, contacts }: Props) {
                 <Dialog open={editContactOpen} onOpenChange={setEditContactOpen}>
                     <DialogContent aria-describedby={undefined} className="dark:bg-gray-800">
                         <DialogHeader>
-                            <DialogTitle>Kontaktni tahrirlash</DialogTitle>
+                            <DialogTitle>{t('Edit Contact')}</DialogTitle>
                         </DialogHeader>
                         <form onSubmit={submitEditContact} className="space-y-3">
                             <div>
@@ -351,7 +353,7 @@ export default function Show({ group, contacts }: Props) {
                                 {editErrors.phone && <p className="mt-1 text-xs text-red-500">{editErrors.phone}</p>}
                             </div>
                             <Button type="submit" className="w-full" disabled={savingEdit}>
-                                {savingEdit ? 'Yangilanmoqda...' : 'Yangilash'}
+                                {savingEdit ? t('Updating...') : t('Update')}
                             </Button>
                         </form>
                     </DialogContent>
@@ -361,14 +363,14 @@ export default function Show({ group, contacts }: Props) {
                 <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
                     <DialogContent aria-describedby={undefined} className="dark:bg-gray-800">
                         <DialogHeader>
-                            <DialogTitle>Kontaktni o'chirish</DialogTitle>
+                            <DialogTitle>{t('Confirm Delete')}</DialogTitle>
                         </DialogHeader>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                            Haqiqatan ham ushbu kontaktni o'chirmoqchimisiz?
+                            {t('Delete Contact Warning')}
                         </p>
                         <div className="mt-4 flex justify-end gap-2">
-                            <Button variant="outline" onClick={() => setDeleteOpen(false)}>Bekor qilish</Button>
-                            <Button variant="destructive" onClick={handleDelete}>O'chirish</Button>
+                            <Button variant="outline" onClick={() => setDeleteOpen(false)}>{t('Cancel')}</Button>
+                            <Button variant="destructive" onClick={handleDelete}>{t('Delete')}</Button>
                         </div>
                     </DialogContent>
                 </Dialog>

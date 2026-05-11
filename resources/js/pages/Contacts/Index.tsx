@@ -217,7 +217,7 @@ export default function Index({ contacts, groups }: Props) {
                         >
                             <div>
                                 <p className="font-semibold text-gray-900 dark:text-white">
-                                    {contact.name ?? <span className="italic text-gray-400">{t('Ismsiz')}</span>}
+                                    {contact.name ?? <span className="italic text-gray-400">{t('No Name')}</span>}
                                 </p>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                     {formatPhoneNumberIntl(contact.phone) || contact.phone}

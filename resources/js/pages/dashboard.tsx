@@ -3,6 +3,7 @@ import { type BreadcrumbItem, type SmsHistory } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import { MessageSquare, Phone, Send, Users, FileText } from 'lucide-react';
 import { useTranslate } from '@/hooks/use-translate';
+import Chart from 'react-apexcharts';
 
 
 
@@ -15,8 +16,16 @@ interface Stats {
     failed: number;
 }
 
+interface DailyStat {
+    date: string;
+    label: string;
+    sent: number;
+    failed: number;
+}
+
 interface Props {
     stats: Stats;
+    daily_stats: DailyStat[];
     recent_history: { data: SmsHistory[] };
 }
 
@@ -38,6 +47,35 @@ export default function Dashboard({ stats, recent_history }: Props) {
         { label: t('Sent Today'), value: stats.sent_today, icon: Send,       href: '/history?status=sent',    color: 'from-emerald-500 to-emerald-600' },
         { label: t('Pending'),    value: stats.pending,    icon: MessageSquare, href: '/history?status=pending', color: 'from-orange-400 to-orange-500' },
         { label: t('Errors'),     value: stats.failed,     icon: MessageSquare, href: '/history?status=failed',  color: 'from-red-500 to-red-600' },
+    ];
+
+    const chartOptions: any = {
+        chart: {
+            id: 'sms-stats',
+            toolbar: { show: false },
+            zoom: { enabled: false },
+            foreColor: '#9ca3af',
+        },
+        xaxis: {
+            categories: daily_stats.map(d => d.label),
+            axisBorder: { show: false },
+            axisTicks: { show: false },
+        },
+        colors: ['#10b981', '#ef4444'],
+        stroke: { curve: 'smooth', width: 3 },
+        dataLabels: { enabled: false },
+        grid: {
+            borderColor: '#374151',
+            strokeDashArray: 4,
+            padding: { left: 20, right: 20 },
+        },
+        legend: { position: 'top', horizontalAlign: 'right' },
+        tooltip: { theme: 'dark' },
+    };
+
+    const chartSeries = [
+        { name: t('Sent'), data: daily_stats.map(d => d.sent) },
+        { name: t('Failed'), data: daily_stats.map(d => d.failed) },
     ];
 
     return (
@@ -78,41 +116,57 @@ export default function Dashboard({ stats, recent_history }: Props) {
                     </Link>
                 </div>
 
-                {/* Recent History */}
-                <div className="rounded-xl bg-white shadow-sm ring-1 ring-black/5 dark:bg-gray-800 dark:ring-white/10">
-                    <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-gray-700">
-                        <h2 className="flex items-center gap-2 font-semibold text-gray-900 dark:text-white">
-                            <MessageSquare className="h-4 w-4 text-blue-500" />
-                            {t('Recent SMS History')}
-                        </h2>
-                        <Link href="/history" className="text-sm text-blue-600 hover:underline dark:text-blue-400">
-                            {t('View all')} →
-                        </Link>
+                {/* Chart and History Section */}
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    {/* Activity Chart */}
+                    <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-black/5 dark:bg-gray-800 dark:ring-white/10">
+                        <h2 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">{t('Weekly Activity')}</h2>
+                        <div className="h-[300px] w-full">
+                            <Chart
+                                options={chartOptions}
+                                series={chartSeries}
+                                type="area"
+                                height="100%"
+                            />
+                        </div>
                     </div>
 
-                    {recent_history.data.length === 0 ? (
-                        <p className="px-6 py-8 text-center text-sm text-gray-400">{t('No SMS sent yet')}</p>
-                    ) : (
-                        <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                            {recent_history.data.map((item) => (
-                                <div key={item.id} className="flex items-start gap-4 px-6 py-3">
-                                    <div className="flex-1 min-w-0">
-                                        <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
-                                            {item.contact?.name ?? item.contact?.phone ?? '—'}
-                                            <span className="ml-2 text-xs text-gray-400">{item.contact?.phone}</span>
-                                        </p>
-                                        <p className="truncate text-xs text-gray-500 dark:text-gray-400">{item.message_body}</p>
-                                    </div>
-                                    <div className="flex shrink-0 flex-col items-end gap-1">
-                                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[item.status] ?? ''}`}>
-                                            {t(item.status.charAt(0).toUpperCase() + item.status.slice(1))}
-                                        </span>
-                                        <span className="text-xs text-gray-400">{item.sent_at}</span>
-                                    </div>
-                                </div>
-                            ))}
+                    {/* Recent History */}
+                    <div className="rounded-xl bg-white shadow-sm ring-1 ring-black/5 dark:bg-gray-800 dark:ring-white/10">
+                        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-gray-700">
+                            <h2 className="flex items-center gap-2 font-semibold text-gray-900 dark:text-white">
+                                <MessageSquare className="h-4 w-4 text-blue-500" />
+                                {t('Recent SMS History')}
+                            </h2>
+                            <Link href="/history" className="text-sm text-blue-600 hover:underline dark:text-blue-400">
+                                {t('View all')} →
+                            </Link>
                         </div>
-                    )}
+
+                        {recent_history.data.length === 0 ? (
+                            <p className="px-6 py-8 text-center text-sm text-gray-400">{t('No SMS sent yet')}</p>
+                        ) : (
+                            <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                                {recent_history.data.map((item) => (
+                                    <div key={item.id} className="flex items-start gap-4 px-6 py-3">
+                                        <div className="flex-1 min-w-0">
+                                            <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
+                                                {item.contact?.name ?? item.contact?.phone ?? '—'}
+                                                <span className="ml-2 text-xs text-gray-400">{item.contact?.phone}</span>
+                                            </p>
+                                            <p className="truncate text-xs text-gray-500 dark:text-gray-400">{item.message_body}</p>
+                                        </div>
+                                        <div className="flex shrink-0 flex-col items-end gap-1">
+                                            <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[item.status] ?? ''}`}>
+                                                {t(item.status.charAt(0).toUpperCase() + item.status.slice(1))}
+                                            </span>
+                                            <span className="text-xs text-gray-400">{item.sent_at}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </AppLayout>

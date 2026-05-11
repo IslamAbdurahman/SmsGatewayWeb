@@ -51,10 +51,8 @@ class HandleInertiaRequests extends Middleware
                 'error'   => $request->session()->get('error'),
             ],
             'locale' => app()->getLocale(),
-            'translations' => collect(file_exists(lang_path(app()->getLocale() . '.json')) 
-                ? json_decode(file_get_contents(lang_path(app()->getLocale() . '.json')), true) 
-                : [])
-                ->merge(file_exists(lang_path('en.json')) ? json_decode(file_get_contents(lang_path('en.json')), true) : []),
+            'translations' => collect(file_exists(lang_path('en.json')) ? json_decode(file_get_contents(lang_path('en.json')), true) : [])
+                ->merge(file_exists(lang_path(app()->getLocale() . '.json')) ? json_decode(file_get_contents(lang_path(app()->getLocale() . '.json')), true) : []),
         ]);
     }
 }

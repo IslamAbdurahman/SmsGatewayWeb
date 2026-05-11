@@ -5,6 +5,8 @@ import {
 } from 'vite';
 import tailwindcss from "@tailwindcss/vite";
 
+import { VitePWA } from 'vite-plugin-pwa';
+
 export default defineConfig({
     plugins: [
         laravel({
@@ -14,6 +16,27 @@ export default defineConfig({
         }),
         react(),
         tailwindcss(),
+        VitePWA({
+            registerType: 'autoUpdate',
+            manifest: {
+                name: 'SMS Gateway',
+                short_name: 'SmsGateway',
+                description: 'Professional GSM Modem SMS Gateway',
+                theme_color: '#3b82f6',
+                icons: [
+                    {
+                        src: '/logo.png',
+                        sizes: '192x192',
+                        type: 'image/png'
+                    },
+                    {
+                        src: '/logo.png',
+                        sizes: '512x512',
+                        type: 'image/png'
+                    }
+                ]
+            }
+        })
     ],
     esbuild: {
         jsx: 'automatic',

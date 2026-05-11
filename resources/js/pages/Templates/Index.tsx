@@ -110,6 +110,9 @@ export default function Index({ templates }: Props) {
                                         rows={4}
                                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                     />
+                                    <p className="mt-1 text-[10px] text-gray-400">
+                                        {t('Use [name] to personalize messages.')}
+                                    </p>
                                     {errors.message_body && <p className="mt-1 text-xs text-red-500">{errors.message_body}</p>}
                                 </div>
                                 <p className="text-right text-xs text-gray-400">{data.message_body.length}/160</p>
@@ -145,6 +148,9 @@ export default function Index({ templates }: Props) {
                                     rows={4}
                                     className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                 />
+                                <p className="mt-1 text-[10px] text-gray-400">
+                                    {t('Use [name] to personalize messages.')}
+                                </p>
                                 {errors.message_body && <p className="mt-1 text-xs text-red-500">{errors.message_body}</p>}
                             </div>
                             <p className="text-right text-xs text-gray-400">{data.message_body.length}/160</p>

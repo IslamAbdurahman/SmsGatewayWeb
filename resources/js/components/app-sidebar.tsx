@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, FileText, LayoutGrid, MessageSquare, Phone, Send, Users } from 'lucide-react';
+import { FileText, Github, LayoutGrid, MessageSquare, Phone, Send, Users } from 'lucide-react';
 import AppLogo from './app-logo';
 import { useTranslate } from '@/hooks/use-translate';
 
@@ -48,9 +48,9 @@ export function AppSidebar() {
 
     const footerNavItems: NavItem[] = [
         {
-            title: t('Documentation'),
-            url: 'https://laravel.com/docs/starter-kits',
-            icon: BookOpen,
+            title: t('GitHub'),
+            url: 'https://github.com/IslamAbdurahman',
+            icon: Github,
         },
     ];
 
@@ -69,7 +69,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href="/dashboard">
+                            <Link href="/">
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>
