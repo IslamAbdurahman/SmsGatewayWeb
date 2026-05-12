@@ -282,13 +282,14 @@ export default function Show({ group, contacts, filters }: Props) {
                                     <DialogTitle>{t('New Contact')}</DialogTitle>
                                 </DialogHeader>
                                 <form onSubmit={submitContact} className="space-y-3">
-                                        <Input
-                                            placeholder={t('Name (optional)')}
-                                            value={contactData.name}
-                                            onChange={e => setContactData('name', e.target.value)}
-                                        />
-                                        {contactErrors.name && <p className="mt-1 text-xs text-red-500">{contactErrors.name}</p>}
-                                    </div>
+                                <div>
+                                    <Input
+                                        placeholder={t('Name (optional)')}
+                                        value={contactData.name}
+                                        onChange={e => setContactData('name', e.target.value)}
+                                    />
+                                    {contactErrors.name && <p className="mt-1 text-xs text-red-500">{contactErrors.name}</p>}
+                                </div>
                                     <div>
                                         <PhoneInput
                                             value={contactData.phone}
@@ -430,6 +431,7 @@ export default function Show({ group, contacts, filters }: Props) {
                             <DialogTitle>{t('Edit Contact')}</DialogTitle>
                         </DialogHeader>
                         <form onSubmit={submitEditContact} className="space-y-3">
+                            <div>
                                 <Input
                                     placeholder={t('Name (optional)')}
                                     value={editData.name}
