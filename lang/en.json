@@ -203,5 +203,7 @@
     "Cannot delete template used in message history.": "Cannot delete template used in message history.",
     "Record created successfully.": "Record created successfully.",
     "Record updated successfully.": "Record updated successfully.",
-    "Record deleted successfully.": "Record deleted successfully."
+    "Record deleted successfully.": "Record deleted successfully.",
+    "You cannot delete yourself.": "You cannot delete yourself.",
+    "Cannot delete user with existing data (groups, templates or history).": "Cannot delete user with existing data (groups, templates or history)."
 }

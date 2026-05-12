@@ -41,7 +41,7 @@ class UserController extends Controller
 
         $user->assignRole('Client');
 
-        return redirect()->back();
+        return redirect()->back()->with('success', __('Record created successfully.'));
     }
 
     public function update(Request $request, User $user)
@@ -61,17 +61,20 @@ class UserController extends Controller
 
         $user->save();
 
-        return redirect()->back();
+        return redirect()->back()->with('success', __('Record updated successfully.'));
     }
 
     public function destroy(User $user)
     {
-        // Don't allow admin to delete themselves
         if ($user->id === auth()->id()) {
-            abort(403, 'Siz o\'zingizni o\'chira olmaysiz.');
+            return redirect()->back()->with('error', __('You cannot delete yourself.'));
+        }
+
+        if ($user->smsGroups()->exists() || $user->smsTemplates()->exists() || $user->smsHistories()->exists()) {
+            return redirect()->back()->with('error', __('Cannot delete user with existing data (groups, templates or history).'));
         }
 
         $user->delete();
-        return redirect()->back();
+        return redirect()->back()->with('success', __('Record deleted successfully.'));
     }
 }

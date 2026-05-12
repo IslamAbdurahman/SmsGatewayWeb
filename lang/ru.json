@@ -203,5 +203,7 @@
     "Cannot delete template used in message history.": "Нельзя удалить шаблон, использованный в истории сообщений.",
     "Record created successfully.": "Запись успешно создана.",
     "Record updated successfully.": "Запись успешно обновлена.",
-    "Record deleted successfully.": "Запись успешно удалена."
+    "Record deleted successfully.": "Запись успешно удалена.",
+    "You cannot delete yourself.": "Вы не можете удалить самого себя.",
+    "Cannot delete user with existing data (groups, templates or history).": "Нельзя удалить пользователя, так как у него есть данные (группы, шаблоны или история)."
 }
