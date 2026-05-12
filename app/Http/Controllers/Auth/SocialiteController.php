@@ -13,6 +13,12 @@ class SocialiteController extends Controller
 {
     public function redirect()
     {
+        if (Auth::check()) {
+            Auth::logout();
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
+        }
+
         return Socialite::driver('google')
             ->stateless()
             ->with(['prompt' => 'select_account'])

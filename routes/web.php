@@ -74,10 +74,8 @@ Route::middleware(['auth'])->group(function () {
 });
 
 require __DIR__.'/settings.php';
-Route::middleware('guest')->group(function () {
-    Route::get('auth/google', [App\Http\Controllers\Auth\SocialiteController::class, 'redirect'])->name('google.redirect');
-    Route::get('auth/google/callback', [App\Http\Controllers\Auth\SocialiteController::class, 'callback'])->name('google.callback');
-});
+Route::get('auth/google', [App\Http\Controllers\Auth\SocialiteController::class, 'redirect'])->name('google.redirect');
+Route::get('auth/google/callback', [App\Http\Controllers\Auth\SocialiteController::class, 'callback'])->name('google.callback');
 
 Route::get('lang/{locale}', function ($locale) {
     if (in_array($locale, ['uz', 'ru', 'en'])) {
