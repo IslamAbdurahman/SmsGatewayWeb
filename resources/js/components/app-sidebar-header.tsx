@@ -2,6 +2,37 @@ import { Breadcrumbs } from '@/components/breadcrumbs';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { type BreadcrumbItem as BreadcrumbItemType } from '@/types';
 import LanguageSwitcher from '@/components/language-switcher';
+import { Button } from '@/components/ui/button';
+import { Moon, Sun, Monitor } from 'lucide-react';
+import { useAppearance, type Appearance } from '@/hooks/use-appearance';
+
+function AppearanceToggle() {
+    const { appearance, updateAppearance } = useAppearance();
+
+    const cycle: Record<Appearance, Appearance> = {
+        light: 'dark',
+        dark: 'system',
+        system: 'light',
+    };
+
+    const icons: Record<Appearance, React.ReactNode> = {
+        light: <Sun className="h-4 w-4" />,
+        dark: <Moon className="h-4 w-4" />,
+        system: <Monitor className="h-4 w-4" />,
+    };
+
+    return (
+        <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => updateAppearance(cycle[appearance])}
+            title={appearance}
+        >
+            {icons[appearance]}
+        </Button>
+    );
+}
 
 export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
     return (
@@ -12,6 +43,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
             </div>
             <div className="flex items-center gap-2">
                 <LanguageSwitcher />
+                <AppearanceToggle />
             </div>
         </header>
     );
