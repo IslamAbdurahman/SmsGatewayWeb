@@ -30,20 +30,28 @@ class SocialiteController extends Controller
         try {
             $googleUser = Socialite::driver('google')->stateless()->user();
             
-            $user = User::updateOrCreate([
-                'email' => $googleUser->email,
-            ], [
-                'name' => $googleUser->name,
-                'google_id' => $googleUser->id,
-                'avatar' => $googleUser->avatar,
-                'google_token' => $googleUser->token,
-                // Password remains unchanged if user exists, otherwise it stays null or we set a random one
-                // Since we made password nullable in migration, null is fine.
-            ]);
+            $user = User::where('email', $googleUser->email)->first();
 
-            Auth::login($user);
+            if ($user) {
+                $user->update([
+                    'google_id' => $googleUser->id,
+                    'avatar' => $googleUser->avatar,
+                    'google_token' => $googleUser->token,
+                ]);
+            } else {
+                $user = User::create([
+                    'name' => $googleUser->name,
+                    'email' => $googleUser->email,
+                    'google_id' => $googleUser->id,
+                    'avatar' => $googleUser->avatar,
+                    'google_token' => $googleUser->token,
+                    'password' => Hash::make(Str::random(24)),
+                ]);
+            }
 
-            return redirect()->intended(route('dashboard', absolute: false));
+            Auth::login($user, true);
+
+            return redirect()->route('dashboard');
         } catch (\Exception $e) {
             \Log::error('Socialite error: ' . $e->getMessage());
             return redirect()->route('login')->with('error', __('Google login error'));
