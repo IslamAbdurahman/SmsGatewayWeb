@@ -88,7 +88,7 @@ sudo nano /etc/supervisor/conf.d/gsmsms-worker.conf
 ```ini
 [program:gsmsms-worker]
 process_name=%(program_name)s_%(process_num)02d
-command=php /var/www/gsmsms/artisan queue:work --sleep=3 --tries=3 --max-time=3600
+command=php /var/www/gsmsms_uz_usr/data/www/gsmsms.uz/artisan queue:work --sleep=3 --tries=3 --max-time=3600
 autostart=true
 autorestart=true
 stopasgroup=true
@@ -96,7 +96,7 @@ killasgroup=true
 user=www-data
 numprocs=1
 redirect_stderr=true
-stdout_logfile=/var/www/gsmsms/storage/logs/worker.log
+stdout_logfile=/var/www/gsmsms_uz_usr/data/www/gsmsms.uz/storage/logs/worker.log
 stopwaitsecs=3600
 ```
 
