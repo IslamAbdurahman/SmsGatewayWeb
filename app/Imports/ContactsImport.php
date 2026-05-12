@@ -32,7 +32,13 @@ class ContactsImport implements ToCollection, WithHeadingRow, WithChunkReading
 
         $toInsert = [];
 
-        foreach ($rows as $row) {
+        \Illuminate\Support\Facades\Log::info('ContactsImport starting', [
+            'group_id' => $this->groupId,
+            'row_count' => count($rows),
+            'first_row_keys' => count($rows) > 0 ? array_keys($rows[0]->toArray()) : 'empty'
+        ]);
+
+        foreach ($rows as $index => $row) {
             // Accept 'phone', 'telefon', 'tel', 'number' column names
             $phone = $row['phone']
                 ?? $row['telefon']
@@ -49,6 +55,7 @@ class ContactsImport implements ToCollection, WithHeadingRow, WithChunkReading
                 ?? null;
 
             if (!$phone) {
+                \Illuminate\Support\Facades\Log::warning("Row {$index} skipped: No phone found", ['row' => $row->toArray()]);
                 $this->skipped++;
                 continue;
             }
