@@ -557,7 +557,10 @@ export default function Index({ groups, templates }: Props) {
                             ) : (
                                 <div className="divide-y divide-gray-100 dark:divide-gray-700">
                                     {sentResults.map((r, i) => (
-                                        <div key={i} className="flex items-center gap-3 px-5 py-3">
+                                        <div key={i} className="flex items-center gap-3 px-4 py-3 group/row transition hover:bg-gray-50/50 dark:hover:bg-gray-700/20">
+                                            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gray-50 text-[10px] font-bold text-gray-400 group-hover/row:bg-blue-50 group-hover/row:text-blue-500 transition-colors dark:bg-gray-700/50">
+                                                {i + 1}
+                                            </div>
                                             {/* Status icon */}
                                             <div className="shrink-0">
                                                 {r.status === 'sending' && (

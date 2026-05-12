@@ -198,6 +198,7 @@ export default function Index({ history, filters, groups, templates, users }: Pr
                     <table className="w-full text-sm">
                         <thead className="bg-gray-50 dark:bg-gray-700/50">
                             <tr>
+                                <th className="w-12 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">#</th>
                                 {[t('Phone / Name'), t('Group'), t('Message / Template'), t('User'), t('Status'), t('Time')].map(h => (
                                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                                         {h}
@@ -213,11 +214,14 @@ export default function Index({ history, filters, groups, templates, users }: Pr
                                     </td>
                                 </tr>
                             )}
-                            {history.data.map((item) => {
-                                const cfg = statusConfig[item.status as keyof typeof statusConfig] ?? statusConfig.pending;
-                                return (
-                                    <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                                        <td className="px-4 py-3">
+                                {history.data.map((item, index) => {
+                                    const cfg = statusConfig[item.status as keyof typeof statusConfig] ?? statusConfig.pending;
+                                    return (
+                                        <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                                            <td className="px-4 py-3 text-[10px] font-mono text-gray-400">
+                                                {(history.meta.current_page - 1) * history.meta.per_page + index + 1}
+                                            </td>
+                                            <td className="px-4 py-3">
                                             {item.contact?.name && (
                                                 <span className="block text-xs text-gray-500">{item.contact.name}</span>
                                             )}

@@ -85,12 +85,15 @@ export default function Dashboard({ stats, daily_stats, recent_history }: Props)
 
                 {/* Stat Cards */}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {cards.map(({ label, value, icon: Icon, href, color }) => (
+                    {cards.map(({ label, value, icon: Icon, href, color }, index) => (
                         <Link
                             key={label}
                             href={href}
                             className="group relative overflow-hidden rounded-xl bg-white p-5 shadow-sm ring-1 ring-black/5 transition hover:shadow-md dark:bg-gray-800 dark:ring-white/10"
                         >
+                            <div className="absolute left-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-[10px] font-bold text-gray-400 dark:bg-gray-700 dark:text-gray-500">
+                                {index + 1}
+                            </div>
                             <div className={`absolute inset-0 bg-gradient-to-br ${color} opacity-0 transition group-hover:opacity-5`} />
                             <div className="flex items-center gap-4">
                                 <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${color} text-white shadow`}>
@@ -109,7 +112,7 @@ export default function Dashboard({ stats, daily_stats, recent_history }: Props)
                 <div className="flex justify-end">
                     <Link
                         href="/send-sms"
-                        className="inline-flex items-center gap-2 rounded-lg bg- gradient-to-r from-blue-600 to-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:opacity-90 transition"
+                        className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow hover:opacity-90 transition"
                     >
                         <Send className="h-4 w-4" />
                         {t('Send SMS')}
@@ -147,8 +150,11 @@ export default function Dashboard({ stats, daily_stats, recent_history }: Props)
                             <p className="px-6 py-8 text-center text-sm text-gray-400">{t('No SMS sent yet')}</p>
                         ) : (
                             <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                                {recent_history.data.map((item) => (
-                                    <div key={item.id} className="flex items-start gap-4 px-6 py-3">
+                                {recent_history.data.map((item, index) => (
+                                    <div key={item.id} className="flex items-start gap-4 px-6 py-3 relative group/row">
+                                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-50 text-[10px] font-bold text-gray-400 dark:bg-gray-700">
+                                            {index + 1}
+                                        </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
                                                 {item.contact?.name ?? item.contact?.phone ?? '—'}

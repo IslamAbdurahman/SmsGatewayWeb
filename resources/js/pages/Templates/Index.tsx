@@ -224,12 +224,15 @@ export default function Index({ templates, users, filters }: Props) {
                             {search ? t('No results found') : t('No templates found')}
                         </p>
                     )}
-                    {filtered.map((template) => (
+                    {filtered.map((template, index) => (
                         <div
                             key={template.id}
-                            className="flex items-start justify-between rounded-lg border bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                            className="flex items-start justify-between rounded-lg border bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 relative group/row"
                         >
-                             <div className="flex-1 min-w-0 pr-4">
+                            <div className="absolute left-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-gray-50 text-[9px] font-bold text-gray-400 dark:bg-gray-700/50 transition-colors group-hover/row:bg-amber-100 group-hover/row:text-amber-500">
+                                {(templates.meta.current_page - 1) * templates.meta.per_page + index + 1}
+                            </div>
+                             <div className="ml-4 flex-1 min-w-0 pr-4">
                                 <p className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                                     {template.title}
                                     {template.user && (

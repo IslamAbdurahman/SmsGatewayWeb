@@ -234,12 +234,15 @@ export default function Index({ contacts, groups, users, filters }: Props) {
                             {(search || groupFilter) ? t('No results found') : t('No contacts found')}
                         </p>
                     )}
-                    {filtered.map((contact) => (
+                    {filtered.map((contact, index) => (
                         <div
                             key={contact.id}
-                            className="flex items-center justify-between rounded-lg border bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                            className="flex items-center justify-between rounded-lg border bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 relative group/row"
                         >
-                            <div>
+                            <div className="absolute left-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-gray-50 text-[9px] font-bold text-gray-400 dark:bg-gray-700/50 transition-colors group-hover/row:bg-violet-100 group-hover/row:text-violet-500">
+                                {(contacts.meta.current_page - 1) * contacts.meta.per_page + index + 1}
+                            </div>
+                            <div className="ml-4 flex-1 min-w-0">
                                 <p className="font-semibold text-gray-900 dark:text-white">
                                     {contact.name ?? <span className="italic text-gray-400">{t('No Name')}</span>}
                                 </p>

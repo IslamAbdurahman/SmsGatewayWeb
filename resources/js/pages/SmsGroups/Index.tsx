@@ -188,12 +188,15 @@ export default function Index({ groups, users, filters }: Props) {
                             {search ? t('No results found') : t('No groups found')}
                         </p>
                     )}
-                    {filtered.map((group) => (
+                    {filtered.map((group, index) => (
                         <div
                             key={group.id}
-                            className="flex items-center justify-between rounded-lg border bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                            className="flex items-center justify-between rounded-lg border bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 relative group/row"
                         >
-                            <div>
+                            <div className="absolute left-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-gray-50 text-[9px] font-bold text-gray-400 dark:bg-gray-700/50 transition-colors group-hover/row:bg-blue-100 group-hover/row:text-blue-500">
+                                {(groups.meta.current_page - 1) * groups.meta.per_page + index + 1}
+                            </div>
+                            <div className="ml-4 flex-1">
                                 <Link
                                     href={`/sms-groups/${group.id}`}
                                     className="font-semibold text-gray-900 transition hover:text-blue-600 dark:text-white dark:hover:text-blue-400"

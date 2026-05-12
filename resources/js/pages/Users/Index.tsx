@@ -101,6 +101,7 @@ export default function Index({ users }: Props) {
                         <table className="w-full text-left text-sm text-gray-600 dark:text-gray-300">
                             <thead className="bg-gray-50 text-gray-700 dark:bg-gray-700/50 dark:text-gray-200">
                                 <tr>
+                                    <th className="px-6 py-4 font-medium w-12">#</th>
                                     <th className="px-6 py-4 font-medium">{t('Name')}</th>
                                     <th className="px-6 py-4 font-medium">{t('Email address')}</th>
                                     <th className="px-6 py-4 font-medium">{t('Role')}</th>
@@ -109,8 +110,9 @@ export default function Index({ users }: Props) {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                                {users.map((user) => (
+                                {users.map((user, index) => (
                                     <tr key={user.id} className="transition-colors hover:bg-gray-50/50 dark:hover:bg-gray-700/25">
+                                        <td className="px-6 py-4 text-xs font-mono text-gray-400">{index + 1}</td>
                                         <td className="px-6 py-4">{user.name}</td>
                                         <td className="px-6 py-4">{user.email}</td>
                                         <td className="px-6 py-4">

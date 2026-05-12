@@ -361,6 +361,7 @@ export default function Show({ group, contacts, filters }: Props) {
                     <table className="w-full text-left text-sm">
                         <thead className="bg-gray-50 text-gray-700 dark:bg-gray-700/50 dark:text-gray-300">
                             <tr>
+                                <th className="w-12 px-6 py-4 font-medium">#</th>
                                 <th className="px-6 py-4 font-medium">{t('Name')}</th>
                                 <th className="px-6 py-4 font-medium">{t('Phone')}</th>
                                 <th className="px-6 py-4 font-medium text-right">{t('Actions')}</th>
@@ -369,13 +370,16 @@ export default function Show({ group, contacts, filters }: Props) {
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                             {contacts.data.length === 0 ? (
                                 <tr>
-                                    <td colSpan={3} className="px-6 py-12 text-center text-gray-500">
+                                    <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
                                         {t('No contacts yet. You can add them via Excel or manually.')}
                                     </td>
                                 </tr>
                             ) : (
-                                contacts.data.map((contact) => (
+                                contacts.data.map((contact, index) => (
                                     <tr key={contact.id} className="transition hover:bg-gray-50/50 dark:hover:bg-gray-700/50">
+                                        <td className="px-6 py-4 text-xs font-mono text-gray-400">
+                                            {(contacts.meta.current_page - 1) * contacts.meta.per_page + index + 1}
+                                        </td>
                                         <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
                                             {contact.name || <span className="italic text-gray-400">{t('No Name')}</span>}
                                         </td>
