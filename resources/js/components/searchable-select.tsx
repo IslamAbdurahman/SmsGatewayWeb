@@ -46,7 +46,7 @@ export function SearchableSelect({
                     type="button"
                     role="combobox"
                     aria-expanded={open}
-                    className={`flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white ${triggerClassName}`}
+                    className={`flex h-9 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white ${triggerClassName}`}
                 >
                     <span className="truncate text-left">
                         {selectedLabel ?? <span className="text-gray-400">{placeholder ?? all}</span>}

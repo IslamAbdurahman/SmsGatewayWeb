@@ -380,6 +380,7 @@ export default function Index({ groups, templates }: Props) {
                                         value: String(g.id),
                                         label: `${g.name} (${g.contacts?.length ?? 0} ${t('records')})`
                                     }))}
+                                    triggerClassName="w-full"
                                 />
                                 {currentGroup?.contacts?.length ? (
                                     <p className="mt-1 text-xs text-gray-400 line-clamp-2">
@@ -405,6 +406,7 @@ export default function Index({ groups, templates }: Props) {
                                             label: `${g.name} > ${c.name ? `${c.name} (${c.phone})` : c.phone}`
                                         }))
                                     )}
+                                    triggerClassName="w-full"
                                 />
                             </div>
                         )}
@@ -419,6 +421,7 @@ export default function Index({ groups, templates }: Props) {
                                 onValueChange={onTemplateChange}
                                 allLabel={t('Select Template')}
                                 options={templates.map(t => ({ value: String(t.id), label: t.title }))}
+                                triggerClassName="w-full"
                             />
                         </div>
 

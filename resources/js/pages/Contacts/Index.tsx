@@ -89,6 +89,7 @@ export default function Index({ contacts, groups, users, filters }: Props) {
             onValueChange={onChange}
             allLabel={t('Select Group')}
             options={groups.map(g => ({ value: String(g.id), label: g.name }))}
+            triggerClassName="w-full"
         />
     );
 
