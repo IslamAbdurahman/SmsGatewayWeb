@@ -79,7 +79,12 @@ class SmsGroupController extends Controller
         }
 
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv|max:10240',
+            'file' => [
+                'required',
+                'file',
+                'mimes:xlsx,xls,csv,txt',
+                'max:10240',
+            ],
         ]);
 
         // Store file with original extension so Excel can detect type
