@@ -39,6 +39,8 @@ export default function Register() {
             <Head title={t('Register')} />
             <form className="flex flex-col gap-6" onSubmit={submit}>
                 <div className="grid gap-6">
+                    <SocialLogin />
+                    
                     <div className="grid gap-2">
                         <Label htmlFor="name">{t('Name')}</Label>
                         <Input
@@ -108,8 +110,6 @@ export default function Register() {
                         {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                         {t('Register')}
                     </Button>
-
-                    <SocialLogin />
                 </div>
 
                 <div className="text-muted-foreground text-center text-sm">
