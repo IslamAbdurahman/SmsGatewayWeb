@@ -67,7 +67,7 @@ class SmsGroupController extends Controller
 
         return Inertia::render('SmsGroups/Show', [
             'group'    => $smsGroup,
-            'contacts' => $smsGroup->contacts()->latest('id')->paginate($perPage)->withQueryString(),
+            'contacts' => \App\Http\Resources\SmsContactResource::collection($smsGroup->contacts()->latest('id')->paginate($perPage)->withQueryString()),
             'filters'  => $request->only(['per_page']),
         ]);
     }
