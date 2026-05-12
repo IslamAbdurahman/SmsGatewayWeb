@@ -31,7 +31,15 @@ class ImportContactsJob implements ShouldQueue
         
         $import = new ContactsImport($this->groupId);
 
-        Excel::import($import, $this->filePath, 'local');
+        $extension = strtolower(pathinfo($this->filePath, PATHINFO_EXTENSION));
+        $readerType = match ($extension) {
+            'xlsx' => \Maatwebsite\Excel\Excel::XLSX,
+            'xls'  => \Maatwebsite\Excel\Excel::XLS,
+            'csv'  => \Maatwebsite\Excel\Excel::CSV,
+            default => null,
+        };
+
+        Excel::import($import, $this->filePath, 'local', $readerType);
         
         Log::info('Excel::import finished');
 
