@@ -62,6 +62,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('sms-groups/download-template', [SmsGroupController::class, 'downloadTemplate'])->name('sms-groups.download-template');
     Route::resource('sms-groups', SmsGroupController::class);
     Route::post('sms-groups/{sms_group}/import', [SmsGroupController::class, 'importContacts'])->name('sms-groups.import');
+    Route::get('sms-groups/import-status', [SmsGroupController::class, 'checkImportStatus'])->name('sms-groups.import-status');
     Route::resource('contacts', SmsContactController::class);
     Route::resource('templates', SmsTemplateController::class);
     Route::resource('history', SmsHistoryController::class)->only(['index']);

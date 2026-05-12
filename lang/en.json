@@ -208,5 +208,10 @@
     "Cannot delete user with existing data (groups, templates or history).": "Cannot delete user with existing data (groups, templates or history).",
     "seo_title": "GsmSms — Professional SMS Gateway | Send SMS via GSM Modem",
     "seo_description": "GsmSms — bulk SMS sending platform via GSM modem. Manage contacts, create templates, track delivery history. Trusted across Uzbekistan and CIS countries.",
-    "seo_keywords": "SMS sending, bulk SMS, GSM modem, SMS gateway, SMS platform, SMS service, Uzbekistan SMS"
+    "seo_keywords": "SMS sending, bulk SMS, GSM modem, SMS gateway, SMS platform, SMS service, Uzbekistan SMS",
+    "Importing in background...": "Importing in background...",
+    "Please wait while we process your file. This may take a few moments.": "Please wait while we process your file. This may take a few moments.",
+    "Background Import Completed!": "Background Import Completed!",
+    "Import Failed": "Import Failed",
+    "An unknown error occurred during import.": "An unknown error occurred during import."
 }

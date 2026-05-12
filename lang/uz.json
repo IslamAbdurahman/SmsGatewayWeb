@@ -208,5 +208,10 @@
     "Cannot delete user with existing data (groups, templates or history).": "Foydalanuvchini o'chirib bo'lmaydi, chunki unda ma'lumotlar (guruhlar, shablonlar yoki tarix) mavjud.",
     "seo_title": "GsmSms — Professional SMS Gateway | GSM Modem orqali SMS yuborish",
     "seo_description": "GsmSms — GSM modem orqali ommaviy SMS yuborish platformasi. Kontaktlarni boshqaring, shablonlar yarating, yuborish tarixini kuzating. O'zbekiston va MDH davlatlari uchun.",
-    "seo_keywords": "SMS yuborish, ommaviy SMS, GSM modem, SMS gateway, SMS platform, SMS xizmati, O'zbekiston SMS"
+    "seo_keywords": "SMS yuborish, ommaviy SMS, GSM modem, SMS gateway, SMS platform, SMS xizmati, O'zbekiston SMS",
+    "Importing in background...": "Orqa fonda yuklanmoqda...",
+    "Please wait while we process your file. This may take a few moments.": "Faylingiz qayta ishlanayotgan paytda kuting. Bu bir necha daqiqa vaqt olishi mumkin.",
+    "Background Import Completed!": "Orqa fonda yuklash yakunlandi!",
+    "Import Failed": "Yuklashda xatolik",
+    "An unknown error occurred during import.": "Yuklash paytida nomaʼlum xatolik yuz berdi."
 }

@@ -78,14 +78,32 @@ class SmsGroupController extends Controller
             'file' => 'required|mimes:xlsx,xls,csv|max:10240',
         ]);
 
-        $import = new \App\Imports\ContactsImport($smsGroup->id);
-        \Maatwebsite\Excel\Facades\Excel::import($import, $request->file('file'));
+        // Store file to disk so the job can read it
+        $filePath = $request->file('file')->store('imports/contacts', 'local');
+        $fullPath = storage_path('app/' . $filePath);
+
+        // Unique key used to poll import status
+        $cacheKey = 'import_' . $smsGroup->id . '_' . auth()->id() . '_' . time();
+
+        // Mark as queued in cache immediately so frontend knows it started
+        \Illuminate\Support\Facades\Cache::put($cacheKey, ['status' => 'queued'], now()->addMinutes(10));
+
+        \App\Jobs\ImportContactsJob::dispatch($smsGroup->id, $fullPath, $cacheKey);
 
         return redirect()->back()->with('flash', [
-            'imported'   => $import->imported,
-            'skipped'    => $import->skipped,
-            'duplicates' => $import->duplicates,
+            'import_queued' => true,
+            'cache_key'     => $cacheKey,
         ]);
+    }
+
+    public function checkImportStatus(\Illuminate\Http\Request $request)
+    {
+        $key = $request->input('key');
+        if (!$key) return response()->json(['status' => 'error', 'message' => 'No key provided'], 400);
+
+        $status = \Illuminate\Support\Facades\Cache::get($key);
+
+        return response()->json($status ?? ['status' => 'not_found']);
     }
 
     public function downloadTemplate()

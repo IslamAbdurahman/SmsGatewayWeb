@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import { Head, useForm, Link, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
@@ -33,6 +33,10 @@ export default function Show({ group, contacts }: Props) {
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [editGroupName, setEditGroupName] = useState(false);
+    
+    // Polling for background import
+    const [importStatus, setImportStatus] = useState<any>(null);
+    const [isPolling, setIsPolling] = useState(false);
 
     // Group name edit form
     const { data: groupForm, setData: setGroupForm, put: putGroup, processing: savingGroup, errors: groupErrors, reset: resetGroup } = useForm({
@@ -97,13 +101,43 @@ export default function Show({ group, contacts }: Props) {
         e.preventDefault();
         if (!importData.file) return;
         postImport(`/sms-groups/${group.id}/import`, {
-            onSuccess: () => {
+            onSuccess: (page) => {
                 resetImport();
                 setImportOpen(false);
                 if (fileInputRef.current) fileInputRef.current.value = '';
+                
+                const flash = (page.props as any).flash;
+                if (flash?.import_queued && flash?.cache_key) {
+                    setIsPolling(true);
+                }
             },
         });
     };
+
+    useEffect(() => {
+        let interval: any;
+        if (isPolling && flash?.cache_key) {
+            interval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/sms-groups/import-status?key=${flash.cache_key}`);
+                    const data = await response.json();
+                    
+                    if (data.status === 'done' || data.status === 'failed') {
+                        setImportStatus(data);
+                        setIsPolling(false);
+                        clearInterval(interval);
+                        // Optional: trigger a page refresh to show new contacts
+                        window.location.reload();
+                    } else {
+                        setImportStatus(data);
+                    }
+                } catch (error) {
+                    console.error('Polling error:', error);
+                }
+            }, 2000);
+        }
+        return () => clearInterval(interval);
+    }, [isPolling, flash?.cache_key]);
 
     const confirmDelete = (id: number) => {
         setDeletingId(id);
@@ -261,9 +295,10 @@ export default function Show({ group, contacts }: Props) {
                     </div>
                 </div>
 
-                {/* Flash Messages for Import Stats */}
-                {flash && flash.imported !== undefined && (
-                    <div className="mt-6">
+                {/* Flash Messages for Import Stats & Background Polling */}
+                <div className="mt-6 space-y-4">
+                    {/* Synchronous Results (if any) */}
+                    {flash && flash.imported !== undefined && (
                         <Alert className="border-green-500/50 bg-green-50/50 dark:bg-green-900/10">
                             <AlertTitle className="text-green-700 dark:text-green-400">{t('Import Completed!')}</AlertTitle>
                             <AlertDescription className="text-sm text-green-600 dark:text-green-300">
@@ -274,8 +309,47 @@ export default function Show({ group, contacts }: Props) {
                                 </ul>
                             </AlertDescription>
                         </Alert>
-                    </div>
-                )}
+                    )}
+
+                    {/* Background Polling Status */}
+                    {isPolling && (
+                        <Alert className="border-blue-500/50 bg-blue-50/50 dark:bg-blue-900/10">
+                            <div className="flex items-center gap-3">
+                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+                                <div>
+                                    <AlertTitle className="text-blue-700 dark:text-blue-400">{t('Importing in background...')}</AlertTitle>
+                                    <AlertDescription className="text-sm text-blue-600 dark:text-blue-300">
+                                        {t('Please wait while we process your file. This may take a few moments.')}
+                                    </AlertDescription>
+                                </div>
+                            </div>
+                        </Alert>
+                    )}
+
+                    {/* Final Background Result */}
+                    {importStatus && importStatus.status === 'done' && (
+                        <Alert className="border-green-500/50 bg-green-50/50 dark:bg-green-900/10">
+                            <AlertTitle className="text-green-700 dark:text-green-400">{t('Background Import Completed!')}</AlertTitle>
+                            <AlertDescription className="text-sm text-green-600 dark:text-green-300">
+                                <ul className="list-inside list-disc mt-1">
+                                    <li>{t('Successful')}: <b>{importStatus.imported}</b> {t('records')}</li>
+                                    <li>{t('Skipped (invalid format)')}: <b>{importStatus.skipped}</b> {t('records')}</li>
+                                    <li>{t('Duplicates')}: <b>{importStatus.duplicates}</b> {t('records')}</li>
+                                </ul>
+                            </AlertDescription>
+                        </Alert>
+                    )}
+
+                    {/* Background Failure */}
+                    {importStatus && importStatus.status === 'failed' && (
+                        <Alert variant="destructive">
+                            <AlertTitle>{t('Import Failed')}</AlertTitle>
+                            <AlertDescription>
+                                {importStatus.error || t('An unknown error occurred during import.')}
+                            </AlertDescription>
+                        </Alert>
+                    )}
+                </div>
 
                 {/* Contact Table */}
                 <div className="mt-8 overflow-hidden rounded-xl border bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">

@@ -5,20 +5,27 @@ namespace App\Imports;
 use App\Models\SmsContact;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 
-class ContactsImport implements ToCollection
+class ContactsImport implements ToCollection, WithHeadingRow, WithChunkReading
 {
-    public int $imported = 0;
-    public int $skipped = 0;
+    public int $imported   = 0;
+    public int $skipped    = 0;
     public int $duplicates = 0;
 
     public function __construct(protected int $groupId)
     {
     }
 
+    public function chunkSize(): int
+    {
+        return 500;
+    }
+
     public function collection(Collection $rows)
     {
-        // To avoid duplicate queries, load existing phones for this group
+        // Load existing phones for duplicate check
         $existingPhones = SmsContact::where('group_id', $this->groupId)
             ->pluck('phone')
             ->toArray();
@@ -26,15 +33,27 @@ class ContactsImport implements ToCollection
         $toInsert = [];
 
         foreach ($rows as $row) {
-            $phone = $row[0] ?? null;
-            $name  = $row[1] ?? null;
+            // Accept 'phone', 'telefon', 'tel', 'number' column names
+            $phone = $row['phone']
+                ?? $row['telefon']
+                ?? $row['tel']
+                ?? $row['number']
+                ?? $row['mobil']
+                ?? null;
+
+            // Accept 'name', 'ism', 'fullname', 'full_name' column names
+            $name = $row['name']
+                ?? $row['ism']
+                ?? $row['fullname']
+                ?? $row['full_name']
+                ?? null;
 
             if (!$phone) {
                 $this->skipped++;
                 continue;
             }
 
-            // Clean phone
+            // Clean phone — keep digits only, then prepend +
             $phone = preg_replace('/[^0-9]/', '', (string) $phone);
 
             if (strlen($phone) < 7) {
@@ -44,13 +63,13 @@ class ContactsImport implements ToCollection
 
             $phone = '+' . $phone;
 
-            // Check if already exists in DB
+            // Skip if already in DB
             if (in_array($phone, $existingPhones)) {
                 $this->duplicates++;
                 continue;
             }
 
-            // Check if duplicate within this batch
+            // Skip if duplicate within this batch
             if (isset($toInsert[$phone])) {
                 $this->duplicates++;
                 continue;
@@ -66,7 +85,6 @@ class ContactsImport implements ToCollection
         }
 
         if (!empty($toInsert)) {
-            // Bulk insert is faster
             SmsContact::insert(array_values($toInsert));
         }
     }
