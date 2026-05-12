@@ -91,9 +91,6 @@ export default function Dashboard({ stats, daily_stats, recent_history }: Props)
                             href={href}
                             className="group relative overflow-hidden rounded-xl bg-white p-5 shadow-sm ring-1 ring-black/5 transition hover:shadow-md dark:bg-gray-800 dark:ring-white/10"
                         >
-                            <div className="absolute left-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-[10px] font-bold text-gray-400 dark:bg-gray-700 dark:text-gray-500">
-                                {index + 1}
-                            </div>
                             <div className={`absolute inset-0 bg-gradient-to-br ${color} opacity-0 transition group-hover:opacity-5`} />
                             <div className="flex items-center gap-4">
                                 <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${color} text-white shadow`}>
@@ -151,10 +148,7 @@ export default function Dashboard({ stats, daily_stats, recent_history }: Props)
                         ) : (
                             <div className="divide-y divide-gray-100 dark:divide-gray-700">
                                 {recent_history.data.map((item, index) => (
-                                    <div key={item.id} className="flex items-start gap-4 px-6 py-3 relative group/row">
-                                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-50 text-[10px] font-bold text-gray-400 dark:bg-gray-700">
-                                            {index + 1}
-                                        </div>
+                                    <div key={item.id} className="flex items-start gap-4 px-6 py-3 relative group/row transition hover:bg-gray-50/50 dark:hover:bg-gray-700/50">
                                         <div className="flex-1 min-w-0">
                                             <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
                                                 {item.contact?.name ?? item.contact?.phone ?? '—'}
