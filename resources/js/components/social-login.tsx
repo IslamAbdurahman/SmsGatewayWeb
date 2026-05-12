@@ -14,7 +14,7 @@ export default function SocialLogin() {
                 type="button" 
                 variant="outline"
                 onClick={loginWithGoogle} 
-                className="w-full h-12 gap-3 text-base font-semibold transition-all hover:bg-gray-50 hover:shadow-md border-gray-200 shadow-sm"
+                className="w-full h-12 gap-3 text-base font-semibold transition-all hover:bg-slate-50 dark:hover:bg-slate-800 hover:shadow-md border-slate-200 dark:border-slate-700 shadow-sm dark:bg-slate-900/50"
             >
                 <svg className="h-5 w-5" viewBox="0 0 24 24">
                     <path
