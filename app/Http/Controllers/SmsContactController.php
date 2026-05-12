@@ -45,7 +45,7 @@ class SmsContactController extends Controller
             );
         }
         $this->service->createContact($request->validated());
-        return redirect()->back();
+        return redirect()->back()->with('success', __('Record created successfully.'));
     }
 
     public function update(StoreSmsContactRequest $request, SmsContact $contact)
@@ -54,7 +54,7 @@ class SmsContactController extends Controller
             abort_if($contact->group->user_id !== auth()->id(), 403);
         }
         $contact->update($request->validated());
-        return redirect()->back();
+        return redirect()->back()->with('success', __('Record updated successfully.'));
     }
 
     public function destroy(SmsContact $contact)
@@ -68,6 +68,6 @@ class SmsContactController extends Controller
         }
 
         $contact->delete();
-        return redirect()->back();
+        return redirect()->back()->with('success', __('Record deleted successfully.'));
     }
 }

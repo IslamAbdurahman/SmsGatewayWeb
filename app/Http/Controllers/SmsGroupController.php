@@ -31,7 +31,7 @@ class SmsGroupController extends Controller
     public function store(StoreSmsGroupRequest $request)
     {
         $this->service->createGroup($request->validated());
-        return redirect()->back();
+        return redirect()->back()->with('success', __('Record created successfully.'));
     }
 
     public function update(StoreSmsGroupRequest $request, SmsGroup $smsGroup)
@@ -40,7 +40,7 @@ class SmsGroupController extends Controller
             abort_if($smsGroup->user_id !== auth()->id(), 403);
         }
         $smsGroup->update(['name' => $request->validated()['name']]);
-        return redirect()->back();
+        return redirect()->back()->with('success', __('Record updated successfully.'));
     }
 
     public function show(SmsGroup $smsGroup): Response
@@ -103,6 +103,6 @@ class SmsGroupController extends Controller
         }
 
         $smsGroup->delete();
-        return redirect()->back();
+        return redirect()->back()->with('success', __('Record deleted successfully.'));
     }
 }

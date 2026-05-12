@@ -30,7 +30,7 @@ class SmsTemplateController extends Controller
     public function store(StoreSmsTemplateRequest $request)
     {
         $this->service->createTemplate($request->validated());
-        return redirect()->back();
+        return redirect()->back()->with('success', __('Record created successfully.'));
     }
 
     public function update(StoreSmsTemplateRequest $request, SmsTemplate $template)
@@ -39,7 +39,7 @@ class SmsTemplateController extends Controller
             abort_if($template->user_id !== auth()->id(), 403);
         }
         $template->update($request->validated());
-        return redirect()->back();
+        return redirect()->back()->with('success', __('Record updated successfully.'));
     }
 
     public function destroy(SmsTemplate $template)
@@ -53,6 +53,6 @@ class SmsTemplateController extends Controller
         }
 
         $template->delete();
-        return redirect()->back();
+        return redirect()->back()->with('success', __('Record deleted successfully.'));
     }
 }

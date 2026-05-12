@@ -193,5 +193,8 @@
     "SMS Sending Completed": "SMS yuborish yakunlandi",
     "Selected group has contacts. Delete contacts first.": "Tanlangan guruhda kontaktlar bor. Avval kontaktlarni o'chiring.",
     "Cannot delete contact with message history.": "Xabarlar tarixi mavjud bo'lgan kontaktni o'chirib bo'lmaydi.",
-    "Cannot delete template used in message history.": "Xabarlar tarixida ishlatilgan shablonni o'chirib bo'lmaydi."
+    "Cannot delete template used in message history.": "Xabarlar tarixida ishlatilgan shablonni o'chirib bo'lmaydi.",
+    "Record created successfully.": "Muvaffaqiyatli yaratildi.",
+    "Record updated successfully.": "Muvaffaqiyatli yangilandi.",
+    "Record deleted successfully.": "Muvaffaqiyatli o'chirildi."
 }
