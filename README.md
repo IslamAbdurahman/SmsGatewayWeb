@@ -78,7 +78,7 @@ For production environments, use Supervisor to keep the queue worker running.
 sudo nano /etc/supervisor/conf.d/gsmsms-worker.conf
 ```
 
-2. Paste the following configuration (update paths and user):
+2. Paste the following configuration (**IMPORTANT:** Replace `/var/www/gsmsms` with your actual project path, e.g., `/var/www/sms_1call_uz_usr/data/www/sms.1call.uz`):
 ```ini
 [program:gsmsms-worker]
 process_name=%(program_name)s_%(process_num)02d
