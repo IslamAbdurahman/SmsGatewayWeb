@@ -107,6 +107,25 @@ sudo supervisorctl update
 sudo supervisorctl start gsmsms-worker:*
 ```
 
+## 🚀 Production Deployment & Domain Change
+
+If you are moving the project to a new domain or server, follow these steps:
+
+1.  **Update `.env`**: Update the `APP_URL` to your new domain.
+2.  **Fix Permissions**: Always ensure the storage and cache directories are writable by the web server:
+    ```bash
+    sudo chown -R www-data:www-data storage bootstrap/cache
+    sudo chmod -R 775 storage bootstrap/cache
+    ```
+3.  **Supervisor**: Update the paths in `/etc/supervisor/conf.d/gsmsms-worker.conf` if the project directory has changed.
+4.  **Google Auth**: If using Google Login, add your new domain to the [Google Cloud Console](https://console.cloud.google.com/apis/credentials) under "Authorized redirect URIs":
+    `https://your-new-domain.com/auth/google/callback`
+5.  **Caches**: Clear all caches after moving:
+    ```bash
+    php artisan optimize:clear
+    php artisan queue:restart
+    ```
+
 ## 👨‍💻 Developer
 
 Built with ❤️ by **Islam Abdurahman**.
