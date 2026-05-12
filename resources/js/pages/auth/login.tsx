@@ -44,6 +44,8 @@ export default function Login({ status, canResetPassword }: LoginProps) {
 
             <form className="flex flex-col gap-6" onSubmit={submit}>
                 <div className="grid gap-6">
+                    <SocialLogin />
+                    
                     <div className="grid gap-2">
                         <Label htmlFor="email">{t('Email address')}</Label>
                         <Input
@@ -91,8 +93,6 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                         {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                         {t('Log in')}
                     </Button>
-
-                    <SocialLogin />
                 </div>
 
                 <div className="text-muted-foreground text-center text-sm">
