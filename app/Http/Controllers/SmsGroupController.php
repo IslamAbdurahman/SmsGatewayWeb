@@ -92,7 +92,7 @@ class SmsGroupController extends Controller
         // Mark as queued in cache immediately so frontend knows it started
         \Illuminate\Support\Facades\Cache::put($cacheKey, ['status' => 'queued'], now()->addMinutes(10));
 
-        \App\Jobs\ImportContactsJob::dispatch($smsGroup->id, $fullPath, $cacheKey);
+        \App\Jobs\ImportContactsJob::dispatch($smsGroup->id, $filePath, $cacheKey);
 
         return redirect()->back()->with('flash', [
             'import_queued' => true,

@@ -28,7 +28,7 @@ class ImportContactsJob implements ShouldQueue
     {
         $import = new ContactsImport($this->groupId);
 
-        Excel::import($import, $this->filePath);
+        Excel::import($import, $this->filePath, 'local');
 
         // Store result summary in cache for 10 minutes so the frontend can read it
         Cache::put($this->cacheKey, [
@@ -39,8 +39,8 @@ class ImportContactsJob implements ShouldQueue
         ], now()->addMinutes(10));
 
         // Clean up temp file
-        if (file_exists($this->filePath)) {
-            unlink($this->filePath);
+        if (\Illuminate\Support\Facades\Storage::disk('local')->exists($this->filePath)) {
+            \Illuminate\Support\Facades\Storage::disk('local')->delete($this->filePath);
         }
     }
 
