@@ -13,6 +13,8 @@ interface Props {
     options: Option[];
     value: string;
     onValueChange: (value: string) => void;
+    onSearchChange?: (search: string) => void;
+    isLoading?: boolean;
     placeholder?: string;
     allLabel?: string;
     className?: string;
@@ -23,6 +25,8 @@ export function SearchableSelect({
     options,
     value,
     onValueChange,
+    onSearchChange,
+    isLoading = false,
     placeholder,
     allLabel,
     className = '',
@@ -35,9 +39,16 @@ export function SearchableSelect({
     const all = allLabel ?? t('All');
     const selectedLabel = value ? options.find(o => o.value === value)?.label : null;
 
-    const filtered = options.filter(o =>
-        o.label.toLowerCase().includes(search.toLowerCase())
-    );
+    const filtered = onSearchChange 
+        ? options 
+        : options.filter(o => o.label.toLowerCase().includes(search.toLowerCase()));
+
+    const handleSearchChange = (val: string) => {
+        setSearch(val);
+        if (onSearchChange) {
+            onSearchChange(val);
+        }
+    };
 
     return (
         <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
@@ -66,10 +77,11 @@ export function SearchableSelect({
                         <Search className="mr-2 h-4 w-4 shrink-0 text-gray-400" />
                         <input
                             className="flex h-9 w-full bg-transparent py-2 text-sm outline-none placeholder:text-gray-400 dark:text-white"
-                            placeholder={t('Search placeholder') || 'Search...'}
+                            placeholder={placeholder ?? (t('Search placeholder') || 'Search...')}
                             value={search}
-                            onChange={e => setSearch(e.target.value)}
+                            onChange={e => handleSearchChange(e.target.value)}
                         />
+                        {isLoading && <span className="ml-2 h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />}
                     </div>
 
                     {/* Options list */}

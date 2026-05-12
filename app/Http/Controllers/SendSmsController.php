@@ -17,7 +17,7 @@ class SendSmsController extends Controller
     {
         $userId = auth()->id();
 
-        $groupsQuery = SmsGroup::with('contacts:id,group_id,phone,name');
+        $groupsQuery = SmsGroup::withCount('contacts');
         $templatesQuery = SmsTemplate::query();
 
         if (!auth()->user()->hasRole('Admin')) {
@@ -44,28 +44,26 @@ class SendSmsController extends Controller
             return response()->json(['already_sent' => 0, 'total' => 0]);
         }
 
-        $group = \App\Models\SmsGroup::with('contacts:id,group_id')->find($groupId);
+        $group = \App\Models\SmsGroup::find($groupId);
         if (!$group) {
             return response()->json(['already_sent' => 0, 'total' => 0]);
         }
 
-        $contactIds = $group->contacts->pluck('id')->toArray();
-        $total      = count($contactIds);
+        $total = $group->contacts()->count();
 
-        $alreadySent = SmsHistory::where('sms_template_id', $templateId)
+        $alreadySentQuery = SmsHistory::where('sms_template_id', $templateId)
             ->where('status', 'sent')
-            ->whereIn('contact_id', $contactIds)
-            ->count();
+            ->whereIn('contact_id', function($q) use ($groupId) {
+                $q->select('id')->from('sms_contacts')->where('group_id', $groupId);
+            });
+
+        $alreadySentCount = (clone $alreadySentQuery)->count();
 
         return response()->json([
-            'already_sent'            => $alreadySent,
+            'already_sent'            => $alreadySentCount,
             'total'                   => $total,
-            'new'                     => $total - $alreadySent,
-            'already_sent_contact_ids' => SmsHistory::where('sms_template_id', $templateId)
-                ->where('status', 'sent')
-                ->whereIn('contact_id', $contactIds)
-                ->pluck('contact_id')
-                ->toArray(),
+            'new'                     => $total - $alreadySentCount,
+            'already_sent_contact_ids' => $alreadySentQuery->pluck('contact_id')->toArray(),
         ]);
     }
 
@@ -118,5 +116,48 @@ class SendSmsController extends Controller
 
         return redirect()->back()
             ->with('flash', ['success' => $message]);
+    }
+
+    /**
+     * Fetch all contacts of a specific group (AJAX).
+     */
+    public function getGroupContacts(SmsGroup $smsGroup): \Illuminate\Http\JsonResponse
+    {
+        if (!auth()->user()->hasRole('Admin')) {
+            abort_if($smsGroup->user_id !== auth()->id(), 403);
+        }
+
+        return response()->json(
+            $smsGroup->contacts()->get(['id', 'phone', 'name'])
+        );
+    }
+
+    /**
+     * Search contacts by phone or name (AJAX).
+     */
+    public function searchContacts(\Illuminate\Http\Request $request): \Illuminate\Http\JsonResponse
+    {
+        $search = $request->input('q');
+        if (strlen($search) < 2) return response()->json([]);
+
+        $query = \App\Models\SmsContact::query()->with('group:id,name');
+
+        if (!auth()->user()->hasRole('Admin')) {
+            $query->whereHas('group', fn($q) => $q->where('user_id', auth()->id()));
+        }
+
+        $contacts = $query->where(function($q) use ($search) {
+            $q->where('phone', 'like', "%{$search}%")
+              ->orWhere('name', 'like', "%{$search}%");
+        })
+        ->limit(10)
+        ->get();
+
+        return response()->json($contacts->map(fn($c) => [
+            'id'    => $c->id,
+            'phone' => $c->phone,
+            'name'  => $c->name,
+            'group_name' => $c->group->name ?? 'No Group',
+        ]));
     }
 }

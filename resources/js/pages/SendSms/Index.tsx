@@ -50,6 +50,12 @@ export default function Index({ groups, templates }: Props) {
     // Duplicate check state
     const [dupCheck, setDupCheck] = useState<{ already_sent: number; total: number; new: number; already_sent_contact_ids: number[] } | null>(null);
 
+    // Async search for contacts
+    const [searchedContacts, setSearchedContacts] = useState<any[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const searchTimeout = useRef<any>(null);
+
     const { flash } = usePage<any>().props;
 
     const currentGroup = groups.find(g => String(g.id) === selectedGroupId);
@@ -97,6 +103,25 @@ export default function Index({ groups, templates }: Props) {
             const tpl = templates.find(t => String(t.id) === id);
             if (tpl) setMessageBody(tpl.message_body);
         }
+    };
+
+    const handleContactSearch = (query: string) => {
+        setSearchQuery(query);
+        if (searchTimeout.current) clearTimeout(searchTimeout.current);
+
+        if (query.length < 2) {
+            setSearchedContacts([]);
+            return;
+        }
+
+        setIsSearching(true);
+        searchTimeout.current = setTimeout(() => {
+            fetch(`/send-sms/search-contacts?q=${encodeURIComponent(query)}`)
+                .then(r => r.json())
+                .then(data => setSearchedContacts(data))
+                .catch(() => setSearchedContacts([]))
+                .finally(() => setIsSearching(false));
+        }, 300);
     };
 
     const getModemInfo = (selectedPort: any) => {
@@ -179,18 +204,39 @@ export default function Index({ groups, templates }: Props) {
 
         let contactsToSend: SmsContact[] = [];
 
-        if (mode === 'group') {
-            if (!currentGroup?.contacts?.length) { alert(t('Selected group has no contacts.')); return; }
-            contactsToSend = currentGroup.contacts;
-        } else {
-            if (!selectedContactId) { alert(t('Please select a contact.')); return; }
-            for (const group of groups) {
-                const found = group.contacts?.find(c => String(c.id) === selectedContactId);
-                if (found) { contactsToSend = [found]; break; }
+        setIsSending(true); // Start loading early
+        
+        try {
+            if (mode === 'group') {
+                if (!selectedGroupId) { alert(t('Please select a group.')); setIsSending(false); return; }
+                // Fetch contacts for this group on demand
+                const response = await fetch(`/send-sms/group-contacts/${selectedGroupId}`);
+                contactsToSend = await response.json();
+                
+                if (!contactsToSend.length) { alert(t('Selected group has no contacts.')); setIsSending(false); return; }
+            } else {
+                if (!selectedContactId) { alert(t('Please select a contact.')); setIsSending(false); return; }
+                const found = searchedContacts.find(c => String(c.id) === selectedContactId);
+                if (found) {
+                    contactsToSend = [{
+                        id: found.id,
+                        phone: found.phone,
+                        name: found.name,
+                        group_id: 0 // Not strictly needed for sending
+                    }];
+                }
             }
+        } catch (err) {
+            console.error('Failed to fetch contacts:', err);
+            alert(t('Error fetching contacts.'));
+            setIsSending(false);
+            return;
         }
 
-        if (!contactsToSend.length) return;
+        if (!contactsToSend.length) {
+            setIsSending(false);
+            return;
+        }
 
         if (!port) { alert(t('Please connect the modem first.')); return; }
 
@@ -378,15 +424,15 @@ export default function Index({ groups, templates }: Props) {
                                     allLabel={t('Select Group')}
                                     options={groups.map(g => ({
                                         value: String(g.id),
-                                        label: `${g.name} (${g.contacts?.length ?? 0} ${t('records')})`
+                                        label: `${g.name} (${g.contacts_count ?? 0} ${t('records')})`
                                     }))}
                                     triggerClassName="w-full"
                                 />
-                                {currentGroup?.contacts?.length ? (
-                                    <p className="mt-1 text-xs text-gray-400 line-clamp-2">
-                                        {currentGroup.contacts.map(c => c.phone).join(', ')}
+                                {currentGroup && (
+                                    <p className="mt-1 text-xs text-gray-400">
+                                        {t('Group size')}: {currentGroup.contacts_count} {t('contacts')}
                                     </p>
-                                ) : null}
+                                )}
                             </div>
                         )}
 
@@ -399,13 +445,14 @@ export default function Index({ groups, templates }: Props) {
                                 <SearchableSelect
                                     value={selectedContactId}
                                     onValueChange={setSelectedContactId}
+                                    placeholder={t('Search by name or phone...')}
                                     allLabel={t('Select Contact')}
-                                    options={groups.flatMap(g =>
-                                        (g.contacts || []).map(c => ({
-                                            value: String(c.id),
-                                            label: `${g.name} > ${c.name ? `${c.name} (${c.phone})` : c.phone}`
-                                        }))
-                                    )}
+                                    options={searchedContacts.map(c => ({
+                                        value: String(c.id),
+                                        label: `${c.name ? `${c.name} (${c.phone})` : c.phone} — ${c.group_name}`
+                                    }))}
+                                    onSearchChange={handleContactSearch}
+                                    isLoading={isSearching}
                                     triggerClassName="w-full"
                                 />
                             </div>

@@ -68,6 +68,8 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('history', SmsHistoryController::class)->only(['index']);
 
     Route::get('send-sms/check', [SendSmsController::class, 'checkDuplicates'])->name('send-sms.check');
+    Route::get('send-sms/group-contacts/{sms_group}', [SendSmsController::class, 'getGroupContacts'])->name('send-sms.group-contacts');
+    Route::get('send-sms/search-contacts', [SendSmsController::class, 'searchContacts'])->name('send-sms.search-contacts');
     Route::get('send-sms', [SendSmsController::class, 'create'])->name('send-sms.create');
     Route::post('send-sms', [SendSmsController::class, 'store'])->name('send-sms.store');
 
