@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import AppLayout from '@/layouts/app-layout';
-import { Head, useForm, Link, usePage } from '@inertiajs/react';
+import { Head, useForm, Link, usePage, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -41,8 +41,6 @@ export default function Show({ group, contacts, filters }: Props) {
     const [importStatus, setImportStatus] = useState<any>(null);
     const [isPolling, setIsPolling] = useState(false);
     const [activeCacheKey, setActiveCacheKey] = useState<string | null>(null);
-
-    const { router } = usePage();
 
     // Group name edit form
     const { data: groupForm, setData: setGroupForm, put: putGroup, processing: savingGroup, errors: groupErrors, reset: resetGroup } = useForm({
@@ -138,7 +136,7 @@ export default function Show({ group, contacts, filters }: Props) {
                         
                         if (data.status === 'done') {
                             // Use router.reload to refresh contacts list without full page reload
-                            (router as any).reload({ only: ['contacts', 'group'] });
+                            router.reload({ only: ['contacts', 'group'] });
                         }
                     } else {
                         setImportStatus(data);
@@ -149,7 +147,7 @@ export default function Show({ group, contacts, filters }: Props) {
             }, 2500);
         }
         return () => clearInterval(interval);
-    }, [isPolling, activeCacheKey, router]);
+    }, [isPolling, activeCacheKey]);
 
     const confirmDelete = (id: number) => {
         setDeletingId(id);
