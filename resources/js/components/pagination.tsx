@@ -29,16 +29,12 @@ export function Pagination({ links, meta }: Props) {
 
     const pages = Array.from({ length: meta.last_page }, (_, i) => i + 1);
 
-    // Build page URL by replacing page param in first link or constructing
+    // Build page URL preserving ALL current query params (filters, per_page, etc.)
     const buildPageUrl = (page: number): string => {
-        const base = links.first ?? links.next ?? links.prev ?? '';
-        try {
-            const url = new URL(base);
-            url.searchParams.set('page', String(page));
-            return url.pathname + url.search;
-        } catch {
-            return `?page=${page}`;
-        }
+        if (typeof window === 'undefined') return `?page=${page}`;
+        const url = new URL(window.location.href);
+        url.searchParams.set('page', String(page));
+        return url.pathname + url.search;
     };
 
     // Show at most ~7 page buttons around current page
