@@ -46,7 +46,7 @@ export default function DeleteUser() {
                     <DialogTrigger asChild>
                         <Button variant="destructive">{t('Delete Account')}</Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent aria-describedby={undefined}>
                         <DialogTitle>{t('Are you sure you want to delete your account?')}</DialogTitle>
                         <DialogDescription>
                             {t('Confirm Delete Account Warning')}

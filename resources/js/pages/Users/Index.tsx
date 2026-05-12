@@ -187,7 +187,7 @@ export default function Index({ users }: Props) {
 
                 {/* Edit Modal */}
                 <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-                    <DialogContent>
+                    <DialogContent aria-describedby={undefined}>
                         <DialogHeader>
                             <DialogTitle>{t('Edit')}</DialogTitle>
                         </DialogHeader>
@@ -221,7 +221,7 @@ export default function Index({ users }: Props) {
 
                 {/* Delete Confirm Modal */}
                 <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-                    <DialogContent>
+                    <DialogContent aria-describedby={undefined}>
                         <DialogHeader>
                             <DialogTitle>{t('Delete User')}</DialogTitle>
                         </DialogHeader>
