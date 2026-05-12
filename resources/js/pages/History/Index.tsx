@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { formatPhoneNumberIntl } from 'react-phone-number-input';
 import { Pagination } from '@/components/pagination';
 import { PerPageSelect } from '@/components/per-page-select';
+import { SearchableSelect } from '@/components/searchable-select';
 
 interface SimpleItem { id: number; name?: string; title?: string; }
 
@@ -106,31 +107,45 @@ export default function Index({ history, filters, groups, templates, users }: Pr
                         </div>
 
                         {/* Status */}
-                        <select value={status} onChange={e => setStatus(e.target.value)} className={selectCls}>
-                            <option value="">{t('All Status')}</option>
-                            <option value="sent">{t('Sent')}</option>
-                            <option value="failed">{t('Error')}</option>
-                            <option value="pending">{t('Pending')}</option>
-                        </select>
+                        <SearchableSelect
+                            value={status}
+                            onValueChange={setStatus}
+                            allLabel={t('All Status')}
+                            options={[
+                                { value: 'sent',    label: t('Sent') },
+                                { value: 'failed',  label: t('Error') },
+                                { value: 'pending', label: t('Pending') },
+                            ]}
+                            triggerClassName="h-8 w-36 text-sm"
+                        />
 
                         {/* Group */}
-                        <select value={groupId} onChange={e => setGroupId(e.target.value)} className={selectCls}>
-                            <option value="">{t('All Group')}</option>
-                            {groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
-                        </select>
+                        <SearchableSelect
+                            value={groupId}
+                            onValueChange={setGroupId}
+                            allLabel={t('All Group')}
+                            options={groups.map(g => ({ value: String(g.id), label: g.name ?? '' }))}
+                            triggerClassName="h-8 w-40 text-sm"
+                        />
 
                         {/* Template */}
-                        <select value={templateId} onChange={e => setTemplateId(e.target.value)} className={selectCls}>
-                            <option value="">{t('All Template')}</option>
-                            {templates.map(t => <option key={t.id} value={t.id}>{t.title}</option>)}
-                        </select>
+                        <SearchableSelect
+                            value={templateId}
+                            onValueChange={setTemplateId}
+                            allLabel={t('All Template')}
+                            options={templates.map(t => ({ value: String(t.id), label: t.title ?? '' }))}
+                            triggerClassName="h-8 w-40 text-sm"
+                        />
 
                         {/* User */}
                         {users.length > 0 && (
-                            <select value={userId} onChange={e => setUserId(e.target.value)} className={selectCls}>
-                                <option value="">{t('All Users')}</option>
-                                {users.map(u => <option key={u.id} value={u.id.toString()}>{u.name}</option>)}
-                            </select>
+                            <SearchableSelect
+                                value={userId}
+                                onValueChange={setUserId}
+                                allLabel={t('All Users')}
+                                options={users.map(u => ({ value: String(u.id), label: u.name }))}
+                                triggerClassName="h-8 w-40 text-sm"
+                            />
                         )}
 
                         {/* Date from-to */}

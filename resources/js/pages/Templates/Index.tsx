@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Pagination } from '@/components/pagination';
 import { PerPageSelect } from '@/components/per-page-select';
+import { SearchableSelect } from '@/components/searchable-select';
 import { type BreadcrumbItem, type SmsTemplate, type User, type PaginatedData } from '@/types';
 import { FileText, Pencil, Trash2, Plus, Search, X, User as UserIcon } from 'lucide-react';
 import { useTranslate } from '@/hooks/use-translate';
@@ -202,20 +203,12 @@ export default function Index({ templates, users, filters }: Props) {
 
                     {users.length > 0 && (
                         <div className="w-full sm:w-64">
-                            <Select value={filters.user_id || 'all'} onValueChange={handleUserFilter}>
-                                <SelectTrigger className="dark:bg-gray-700 dark:text-white">
-                                    <div className="flex items-center gap-2">
-                                        <UserIcon className="h-4 w-4 text-gray-400" />
-                                        <SelectValue placeholder={t('Filter by User')} />
-                                    </div>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">{t('All Users')}</SelectItem>
-                                    {users.map(u => (
-                                        <SelectItem key={u.id} value={u.id.toString()}>{u.name}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <SearchableSelect
+                                value={filters.user_id || ''}
+                                onValueChange={handleUserFilter}
+                                allLabel={t('All Users')}
+                                options={users.map(u => ({ value: u.id.toString(), label: u.name }))}
+                            />
                         </div>
                     )}
 

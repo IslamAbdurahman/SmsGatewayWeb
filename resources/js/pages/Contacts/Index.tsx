@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Pagination } from '@/components/pagination';
 import { PerPageSelect } from '@/components/per-page-select';
+import { SearchableSelect } from '@/components/searchable-select';
 import { type BreadcrumbItem, type SmsContact, type SmsGroup, type User, type PaginatedData } from '@/types';
 import { Phone, Pencil, Trash2, Plus, Search, X, User as UserIcon } from 'lucide-react';
 import { useTranslate } from '@/hooks/use-translate';
@@ -83,14 +84,12 @@ export default function Index({ contacts, groups, users, filters }: Props) {
     };
 
     const GroupSelect = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
-        <select
+        <SearchableSelect
             value={value}
-            onChange={e => onChange(e.target.value)}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-        >
-            <option value="">{t('Select Group')}</option>
-            {groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
-        </select>
+            onValueChange={onChange}
+            allLabel={t('Select Group')}
+            options={groups.map(g => ({ value: String(g.id), label: g.name }))}
+        />
     );
 
     return (
@@ -152,31 +151,23 @@ export default function Index({ contacts, groups, users, filters }: Props) {
                     </div>
 
                     {/* Group filter */}
-                    <select
-                        value={groupFilter}
-                        onChange={e => setGroupFilter(e.target.value)}
-                        className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                    >
-                        <option value="">{t('All Group')}</option>
-                        {groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
-                    </select>
+                    <div className="w-full sm:w-48">
+                        <SearchableSelect
+                            value={groupFilter}
+                            onValueChange={setGroupFilter}
+                            allLabel={t('All Group')}
+                            options={groups.map(g => ({ value: String(g.id), label: g.name }))}
+                        />
+                    </div>
 
                     {users.length > 0 && (
-                        <div className="w-full sm:w-64">
-                            <Select value={filters.user_id || 'all'} onValueChange={handleUserFilter}>
-                                <SelectTrigger className="h-9 dark:bg-gray-700 dark:text-white">
-                                    <div className="flex items-center gap-2">
-                                        <UserIcon className="h-4 w-4 text-gray-400" />
-                                        <SelectValue placeholder={t('Filter by User')} />
-                                    </div>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">{t('All Users')}</SelectItem>
-                                    {users.map(u => (
-                                        <SelectItem key={u.id} value={u.id.toString()}>{u.name}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                        <div className="w-full sm:w-56">
+                            <SearchableSelect
+                                value={filters.user_id || ''}
+                                onValueChange={handleUserFilter}
+                                allLabel={t('All Users')}
+                                options={users.map(u => ({ value: u.id.toString(), label: u.name }))}
+                            />
                         </div>
                     )}
 

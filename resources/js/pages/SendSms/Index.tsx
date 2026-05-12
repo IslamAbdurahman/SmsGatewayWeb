@@ -6,6 +6,7 @@ import { type BreadcrumbItem, type SmsGroup, type SmsTemplate, type SmsContact }
 import { Send, Users, Phone, FileText, Usb, AlertTriangle, CheckCircle2, XCircle, Clock, CheckCheck } from 'lucide-react';
 import { formatPhoneNumberIntl } from 'react-phone-number-input';
 import { useTranslate } from '@/hooks/use-translate';
+import { SearchableSelect } from '@/components/searchable-select';
 
 
 
@@ -371,19 +372,15 @@ export default function Index({ groups, templates }: Props) {
                                 <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                     <Users className="mr-1 inline h-4 w-4" /> {t('Group')}
                                 </label>
-                                <select
+                                <SearchableSelect
                                     value={selectedGroupId}
-                                    onChange={e => setSelectedGroupId(e.target.value)}
-                                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                    disabled={isSending}
-                                >
-                                    <option value="">{t('Select Group')}</option>
-                                    {groups.map(g => (
-                                        <option key={g.id} value={g.id}>
-                                            {g.name} ({g.contacts?.length ?? 0} {t('records')})
-                                        </option>
-                                    ))}
-                                </select>
+                                    onValueChange={setSelectedGroupId}
+                                    allLabel={t('Select Group')}
+                                    options={groups.map(g => ({
+                                        value: String(g.id),
+                                        label: `${g.name} (${g.contacts?.length ?? 0} ${t('records')})`
+                                    }))}
+                                />
                                 {currentGroup?.contacts?.length ? (
                                     <p className="mt-1 text-xs text-gray-400 line-clamp-2">
                                         {currentGroup.contacts.map(c => c.phone).join(', ')}
@@ -398,23 +395,17 @@ export default function Index({ groups, templates }: Props) {
                                 <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                     <Phone className="mr-1 inline h-4 w-4" /> {t('Contact')}
                                 </label>
-                                <select
+                                <SearchableSelect
                                     value={selectedContactId}
-                                    onChange={e => setSelectedContactId(e.target.value)}
-                                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                    disabled={isSending}
-                                >
-                                    <option value="">{t('Select Contact')}</option>
-                                    {groups.map(g => (
-                                        <optgroup key={g.id} label={g.name}>
-                                            {g.contacts?.map(c => (
-                                                <option key={c.id} value={c.id}>
-                                                    {c.name ? `${c.name} (${c.phone})` : c.phone}
-                                                </option>
-                                            ))}
-                                        </optgroup>
-                                    ))}
-                                </select>
+                                    onValueChange={setSelectedContactId}
+                                    allLabel={t('Select Contact')}
+                                    options={groups.flatMap(g =>
+                                        (g.contacts || []).map(c => ({
+                                            value: String(c.id),
+                                            label: `${g.name} > ${c.name ? `${c.name} (${c.phone})` : c.phone}`
+                                        }))
+                                    )}
+                                />
                             </div>
                         )}
 
@@ -423,15 +414,12 @@ export default function Index({ groups, templates }: Props) {
                             <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 <FileText className="mr-1 inline h-4 w-4" /> {t('Select Template')}
                             </label>
-                            <select
+                            <SearchableSelect
                                 value={selectedTemplateId}
-                                onChange={e => onTemplateChange(e.target.value)}
-                                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                disabled={isSending}
-                            >
-                                <option value="">{t('Select Template')}</option>
-                                {templates.map(t => <option key={t.id} value={t.id}>{t.title}</option>)}
-                            </select>
+                                onValueChange={onTemplateChange}
+                                allLabel={t('Select Template')}
+                                options={templates.map(t => ({ value: String(t.id), label: t.title }))}
+                            />
                         </div>
 
                         {/* Message */}
