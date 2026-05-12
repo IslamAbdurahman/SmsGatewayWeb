@@ -19,8 +19,8 @@ export default defineConfig({
         VitePWA({
             registerType: 'autoUpdate',
             manifest: {
-                name: 'SMS Gateway',
-                short_name: 'SmsGateway',
+                name: 'GsmSms',
+                short_name: 'GsmSms',
                 description: 'Professional GSM Modem SMS Gateway',
                 theme_color: '#3b82f6',
                 icons: [

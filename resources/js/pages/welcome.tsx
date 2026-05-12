@@ -77,7 +77,7 @@ export default function Welcome() {
                             <Send className="h-5 w-5 text-white" />
                         </div>
                         <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-400 dark:to-violet-400">
-                            SmsGateway
+                            GsmSms
                         </span>
                     </div>
 
@@ -218,7 +218,7 @@ export default function Welcome() {
                                 <div className="h-6 w-6 bg-indigo-600 rounded flex items-center justify-center">
                                     <Send className="h-4 w-4 text-white" />
                                 </div>
-                                <span className="text-lg font-bold tracking-tight">{t('SmsGateway')}</span>
+                                <span className="text-lg font-bold tracking-tight">{t('GsmSms')}</span>
                             </div>
                             
                             <div className="flex gap-8 text-sm text-gray-500 dark:text-gray-400">
@@ -228,7 +228,7 @@ export default function Welcome() {
                             </div>
 
                             <div className="text-sm text-gray-400">
-                                © {new Date().getFullYear()} SmsGateway. {t('All rights reserved.')}
+                                © {new Date().getFullYear()} GsmSms. {t('All rights reserved.')}
                             </div>
                         </div>
                     </div>

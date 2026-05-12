@@ -32,6 +32,8 @@ export default function LanguageSwitcher() {
                     <DropdownMenuItem key={lang.code} asChild>
                         <Link
                             href={route('lang.switch', { locale: lang.code })}
+                            preserveState
+                            preserveScroll
                             className="w-full cursor-pointer"
                         >
                             {lang.name}
