@@ -16,12 +16,12 @@ interface Props {
 export function Pagination({ links, meta }: Props) {
     const { t } = useTranslate();
 
-    if (meta.last_page <= 1) return null;
+    if (meta.last_page <= 1 || !links || links.length === 0) return null;
 
     return (
         <div className="flex items-center justify-between px-4 py-3 sm:px-6">
             <div className="flex flex-1 justify-between sm:hidden">
-                {links[0].url ? (
+                {links[0]?.url ? (
                     <Link
                         href={links[0].url}
                         className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
@@ -33,7 +33,7 @@ export function Pagination({ links, meta }: Props) {
                         {t('Previous')}
                     </span>
                 )}
-                {links[links.length - 1].url ? (
+                {links[links.length - 1]?.url ? (
                     <Link
                         href={links[links.length - 1].url}
                         className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
