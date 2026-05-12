@@ -71,12 +71,18 @@ npm run dev
 ```
 
 ### 7. Queue Worker (Supervisor)
-For production environments, use Supervisor to keep the queue worker running:
+For production environments, use Supervisor to keep the queue worker running.
 
+1. Create a configuration file:
+```bash
+sudo nano /etc/supervisor/conf.d/gsmsms-worker.conf
+```
+
+2. Paste the following configuration (update paths and user):
 ```ini
 [program:gsmsms-worker]
 process_name=%(program_name)s_%(process_num)02d
-command=php /path/to/your/project/artisan queue:work --sleep=3 --tries=3 --max-time=3600
+command=php /var/www/gsmsms/artisan queue:work --sleep=3 --tries=3 --max-time=3600
 autostart=true
 autorestart=true
 stopasgroup=true
@@ -84,8 +90,15 @@ killasgroup=true
 user=www-data
 numprocs=1
 redirect_stderr=true
-stdout_logfile=/path/to/your/project/storage/logs/worker.log
+stdout_logfile=/var/www/gsmsms/storage/logs/worker.log
 stopwaitsecs=3600
+```
+
+3. Update and start Supervisor:
+```bash
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start gsmsms-worker:*
 ```
 
 ## 👨‍💻 Developer
