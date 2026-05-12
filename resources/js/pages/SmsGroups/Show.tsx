@@ -40,6 +40,9 @@ export default function Show({ group, contacts, filters }: Props) {
     // Polling for background import
     const [importStatus, setImportStatus] = useState<any>(null);
     const [isPolling, setIsPolling] = useState(false);
+    const [activeCacheKey, setActiveCacheKey] = useState<string | null>(null);
+
+    const { router } = usePage();
 
     // Group name edit form
     const { data: groupForm, setData: setGroupForm, put: putGroup, processing: savingGroup, errors: groupErrors, reset: resetGroup } = useForm({
@@ -109,8 +112,9 @@ export default function Show({ group, contacts, filters }: Props) {
                 setImportOpen(false);
                 if (fileInputRef.current) fileInputRef.current.value = '';
                 
-                const flash = (page.props as any).flash;
-                if (flash?.import_queued && flash?.cache_key) {
+                const flashData = (page.props as any).flash;
+                if (flashData?.import_queued && flashData?.cache_key) {
+                    setActiveCacheKey(flashData.cache_key);
                     setIsPolling(true);
                 }
             },
@@ -119,28 +123,33 @@ export default function Show({ group, contacts, filters }: Props) {
 
     useEffect(() => {
         let interval: any;
-        if (isPolling && flash?.cache_key) {
+        if (isPolling && activeCacheKey) {
             interval = setInterval(async () => {
                 try {
-                    const response = await fetch(`/sms-groups/import-status?key=${flash.cache_key}`);
+                    const response = await fetch(`/sms-groups/import-status?key=${activeCacheKey}`);
+                    if (!response.ok) throw new Error('Network response was not ok');
                     const data = await response.json();
                     
                     if (data.status === 'done' || data.status === 'failed') {
                         setImportStatus(data);
                         setIsPolling(false);
+                        setActiveCacheKey(null);
                         clearInterval(interval);
-                        // Optional: trigger a page refresh to show new contacts
-                        window.location.reload();
+                        
+                        if (data.status === 'done') {
+                            // Use router.reload to refresh contacts list without full page reload
+                            (router as any).reload({ only: ['contacts', 'group'] });
+                        }
                     } else {
                         setImportStatus(data);
                     }
                 } catch (error) {
                     console.error('Polling error:', error);
                 }
-            }, 2000);
+            }, 2500);
         }
         return () => clearInterval(interval);
-    }, [isPolling, flash?.cache_key]);
+    }, [isPolling, activeCacheKey, router]);
 
     const confirmDelete = (id: number) => {
         setDeletingId(id);
