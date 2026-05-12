@@ -282,9 +282,8 @@ export default function Show({ group, contacts, filters }: Props) {
                                     <DialogTitle>{t('New Contact')}</DialogTitle>
                                 </DialogHeader>
                                 <form onSubmit={submitContact} className="space-y-3">
-                                    <div>
                                         <Input
-                                            placeholder="Ism (ixtiyoriy)"
+                                            placeholder={t('Name (optional)')}
                                             value={contactData.name}
                                             onChange={e => setContactData('name', e.target.value)}
                                         />
@@ -431,9 +430,8 @@ export default function Show({ group, contacts, filters }: Props) {
                             <DialogTitle>{t('Edit Contact')}</DialogTitle>
                         </DialogHeader>
                         <form onSubmit={submitEditContact} className="space-y-3">
-                            <div>
                                 <Input
-                                    placeholder="Ism (ixtiyoriy)"
+                                    placeholder={t('Name (optional)')}
                                     value={editData.name}
                                     onChange={e => setEditData('name', e.target.value)}
                                 />
