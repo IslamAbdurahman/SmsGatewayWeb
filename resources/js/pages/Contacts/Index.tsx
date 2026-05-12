@@ -1,25 +1,28 @@
 import { useState } from 'react';
 import AppLayout from '@/layouts/app-layout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { type BreadcrumbItem, type SmsContact, type SmsGroup } from '@/types';
-import { Phone, Pencil, Trash2, Plus, Search, X } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Pagination } from '@/components/pagination';
+import { PerPageSelect } from '@/components/per-page-select';
+import { type BreadcrumbItem, type SmsContact, type SmsGroup, type User, type PaginatedData } from '@/types';
+import { Phone, Pencil, Trash2, Plus, Search, X, User as UserIcon } from 'lucide-react';
 import { useTranslate } from '@/hooks/use-translate';
 import { PhoneInput } from '@/components/phone-input';
 import { formatPhoneNumberIntl } from 'react-phone-number-input';
 
-
-
 interface Props {
-    contacts: { data: SmsContact[] };
+    contacts: PaginatedData<SmsContact & { user?: { id: number; name: string } }>;
     groups: SmsGroup[];
+    users: User[];
+    filters: { user_id?: string; per_page?: string };
 }
 
 type FormData = { group_id: string; phone: string; name: string };
 
-export default function Index({ contacts, groups }: Props) {
+export default function Index({ contacts, groups, users, filters }: Props) {
     const { t } = useTranslate();
     const breadcrumbs: BreadcrumbItem[] = [{ title: t('Contacts'), href: '/contacts' }];
     const { data, setData, post, put, reset, delete: destroy, errors } = useForm<FormData>({
@@ -34,6 +37,10 @@ export default function Index({ contacts, groups }: Props) {
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [search, setSearch] = useState('');
     const [groupFilter, setGroupFilter] = useState('');
+
+    const handleUserFilter = (userId: string) => {
+        router.get('/contacts', { ...filters, user_id: userId === 'all' ? '' : userId }, { preserveState: true });
+    };
 
     const filtered = contacts.data.filter(c => {
         const matchSearch = c.phone.includes(search) || (c.name ?? '').toLowerCase().includes(search.toLowerCase());
@@ -94,7 +101,7 @@ export default function Index({ contacts, groups }: Props) {
                     <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900 dark:text-white">
                         <Phone className="h-6 w-6 text-violet-500" />
                         {t('Contacts')}
-                        <span className="ml-1 text-sm font-normal text-gray-400">({contacts.data.length} {t('records')})</span>
+                        <span className="ml-1 text-sm font-normal text-gray-400">({contacts.meta.total} {t('records')})</span>
                     </h1>
 
                     {/* Create Dialog */}
@@ -154,9 +161,32 @@ export default function Index({ contacts, groups }: Props) {
                         {groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
                     </select>
 
-                    {(search || groupFilter) && (
+                    {users.length > 0 && (
+                        <div className="w-full sm:w-64">
+                            <Select value={filters.user_id || 'all'} onValueChange={handleUserFilter}>
+                                <SelectTrigger className="h-9 dark:bg-gray-700 dark:text-white">
+                                    <div className="flex items-center gap-2">
+                                        <UserIcon className="h-4 w-4 text-gray-400" />
+                                        <SelectValue placeholder={t('Filter by User')} />
+                                    </div>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">{t('All Users')}</SelectItem>
+                                    {users.map(u => (
+                                        <SelectItem key={u.id} value={u.id.toString()}>{u.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
+
+                    <div className="w-full sm:w-auto sm:ml-auto">
+                        <PerPageSelect value={filters.per_page || 20} url="/contacts" />
+                    </div>
+
+                    {(search || groupFilter || filters.user_id) && (
                         <button
-                            onClick={() => { setSearch(''); setGroupFilter(''); }}
+                            onClick={() => { setSearch(''); setGroupFilter(''); handleUserFilter('all'); }}
                             className="flex items-center gap-1 rounded-md px-3 py-1 text-sm text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
                         >
                             <X className="h-4 w-4" /> {t('Clear')}
@@ -226,6 +256,12 @@ export default function Index({ contacts, groups }: Props) {
                                             {contact.group}
                                         </span>
                                     )}
+                                    {contact.user && (
+                                        <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 font-medium">
+                                            <UserIcon className="h-3 w-3" />
+                                            {contact.user.name}
+                                        </span>
+                                    )}
                                 </p>
                             </div>
                             <div className="flex items-center gap-2">
@@ -238,6 +274,10 @@ export default function Index({ contacts, groups }: Props) {
                             </div>
                         </div>
                     ))}
+                </div>
+
+                <div className="mt-6">
+                    <Pagination links={contacts.links} meta={contacts.meta} />
                 </div>
             </div>
         </AppLayout>

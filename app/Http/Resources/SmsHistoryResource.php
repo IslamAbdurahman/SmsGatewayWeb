@@ -24,6 +24,12 @@ class SmsHistoryResource extends JsonResource
             'template'     => $this->whenLoaded('template', fn () => $this->template ? [
                 'title' => $this->template->title,
             ] : null),
+            'user'         => $this->whenLoaded('user', function () {
+                return [
+                    'id'   => $this->user->id,
+                    'name' => $this->user->name,
+                ];
+            }),
         ];
     }
 }

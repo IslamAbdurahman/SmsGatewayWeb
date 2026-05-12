@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreSmsTemplateRequest;
 use App\Http\Resources\SmsTemplateResource;
 use App\Models\SmsTemplate;
+use App\Models\User;
 use App\Services\SmsService;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -15,15 +16,27 @@ class SmsTemplateController extends Controller
 {
     public function __construct(protected SmsService $service) {}
 
-    public function index(): Response
+    public function index(\Illuminate\Http\Request $request): Response
     {
+        $isAdmin = auth()->user()->hasRole('Admin');
         $query = SmsTemplate::latest('id');
-        if (!auth()->user()->hasRole('Admin')) {
+
+        if ($isAdmin) {
+            $query->with('user');
+            if ($userId = $request->input('user_id')) {
+                $query->where('user_id', $userId);
+            }
+        } else {
             $query->where('user_id', auth()->id());
         }
 
+        $perPage = $request->input('per_page', 20);
+        $perPage = $perPage === 'all' ? 1000000 : (int)$perPage;
+
         return Inertia::render('Templates/Index', [
-            'templates' => SmsTemplateResource::collection($query->get()),
+            'templates' => SmsTemplateResource::collection($query->paginate($perPage)->withQueryString()),
+            'users' => $isAdmin ? User::all(['id', 'name']) : [],
+            'filters' => $request->only(['user_id', 'per_page']),
         ]);
     }
 

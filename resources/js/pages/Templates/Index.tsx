@@ -1,22 +1,25 @@
 import { useState } from 'react';
 import AppLayout from '@/layouts/app-layout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { type BreadcrumbItem, type SmsTemplate } from '@/types';
-import { FileText, Pencil, Trash2, Plus, Search, X } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Pagination } from '@/components/pagination';
+import { PerPageSelect } from '@/components/per-page-select';
+import { type BreadcrumbItem, type SmsTemplate, type User, type PaginatedData } from '@/types';
+import { FileText, Pencil, Trash2, Plus, Search, X, User as UserIcon } from 'lucide-react';
 import { useTranslate } from '@/hooks/use-translate';
 
-
-
 interface Props {
-    templates: { data: SmsTemplate[] };
+    templates: PaginatedData<SmsTemplate & { user?: { id: number; name: string } }>;
+    users: User[];
+    filters: { user_id?: string; per_page?: string };
 }
 
 type FormData = { title: string; message_body: string };
 
-export default function Index({ templates }: Props) {
+export default function Index({ templates, users, filters }: Props) {
     const { t } = useTranslate();
     const breadcrumbs: BreadcrumbItem[] = [{ title: t('Templates'), href: '/templates' }];
     const { data, setData, post, put, reset, delete: destroy, errors } = useForm<FormData>({ title: '', message_body: '' });
@@ -26,6 +29,10 @@ export default function Index({ templates }: Props) {
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [search, setSearch] = useState('');
+
+    const handleUserFilter = (userId: string) => {
+        router.get('/templates', { ...filters, user_id: userId === 'all' ? '' : userId }, { preserveState: true });
+    };
 
     const filtered = templates.data.filter(t =>
         t.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -76,7 +83,7 @@ export default function Index({ templates }: Props) {
                     <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900 dark:text-white">
                         <FileText className="h-6 w-6 text-amber-500" />
                         {t('SMS Templates')}
-                        <span className="ml-1 text-sm font-normal text-gray-400">({templates.data.length} {t('records')})</span>
+                        <span className="ml-1 text-sm font-normal text-gray-400">({templates.meta.total} {t('records')})</span>
                     </h1>
 
                     {/* Create Dialog */}
@@ -176,20 +183,45 @@ export default function Index({ templates }: Props) {
                     </DialogContent>
                 </Dialog>
 
-                {/* Search Bar */}
-                <div className="mt-4 relative">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                    <Input
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        placeholder={t('Search by template name or body...')}
-                        className="pl-9 pr-9"
-                    />
-                    {search && (
-                        <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                            <X className="h-4 w-4" />
-                        </button>
+                {/* Filters */}
+                <div className="mt-4 flex flex-col sm:flex-row gap-4">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                        <Input
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            placeholder={t('Search by template name or body...')}
+                            className="pl-9 pr-9"
+                        />
+                        {search && (
+                            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                <X className="h-4 w-4" />
+                            </button>
+                        )}
+                    </div>
+
+                    {users.length > 0 && (
+                        <div className="w-full sm:w-64">
+                            <Select value={filters.user_id || 'all'} onValueChange={handleUserFilter}>
+                                <SelectTrigger className="dark:bg-gray-700 dark:text-white">
+                                    <div className="flex items-center gap-2">
+                                        <UserIcon className="h-4 w-4 text-gray-400" />
+                                        <SelectValue placeholder={t('Filter by User')} />
+                                    </div>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">{t('All Users')}</SelectItem>
+                                    {users.map(u => (
+                                        <SelectItem key={u.id} value={u.id.toString()}>{u.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     )}
+
+                    <div className="sm:ml-auto">
+                        <PerPageSelect value={filters.per_page || 20} url="/templates" />
+                    </div>
                 </div>
 
                 <div className="mt-6 space-y-2">
@@ -203,8 +235,16 @@ export default function Index({ templates }: Props) {
                             key={template.id}
                             className="flex items-start justify-between rounded-lg border bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
                         >
-                            <div className="flex-1 min-w-0 pr-4">
-                                <p className="font-semibold text-gray-900 dark:text-white">{template.title}</p>
+                             <div className="flex-1 min-w-0 pr-4">
+                                <p className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                                    {template.title}
+                                    {template.user && (
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 font-medium">
+                                            <UserIcon className="h-2.5 w-2.5" />
+                                            {template.user.name}
+                                        </span>
+                                    )}
+                                </p>
                                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{template.message_body}</p>
                             </div>
                             <div className="flex shrink-0 items-center gap-2">
@@ -217,6 +257,10 @@ export default function Index({ templates }: Props) {
                             </div>
                         </div>
                     ))}
+                </div>
+
+                <div className="mt-6">
+                    <Pagination links={templates.links} meta={templates.meta} />
                 </div>
             </div>
         </AppLayout>

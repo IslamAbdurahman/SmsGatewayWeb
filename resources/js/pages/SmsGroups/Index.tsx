@@ -1,20 +1,23 @@
 import { useState } from 'react';
 import AppLayout from '@/layouts/app-layout';
-import { Head, useForm, Link } from '@inertiajs/react';
+import { Head, useForm, Link, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { type BreadcrumbItem, type SmsGroup } from '@/types';
-import { Users, Pencil, Trash2, Plus, Search, X } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Pagination } from '@/components/pagination';
+import { PerPageSelect } from '@/components/per-page-select';
+import { type BreadcrumbItem, type SmsGroup, type User, type PaginatedData } from '@/types';
+import { Users, Pencil, Trash2, Plus, Search, X, User as UserIcon } from 'lucide-react';
 import { useTranslate } from '@/hooks/use-translate';
 
-
-
 interface Props {
-    groups: { data: SmsGroup[] };
+    groups: PaginatedData<SmsGroup & { user?: { id: number; name: string } }>;
+    users: User[];
+    filters: { user_id?: string; per_page?: string };
 }
 
-export default function Index({ groups }: Props) {
+export default function Index({ groups, users, filters }: Props) {
     const { t } = useTranslate();
     const breadcrumbs: BreadcrumbItem[] = [{ title: t('SMS Groups'), href: '/sms-groups' }];
     const { data, setData, post, put, reset, delete: destroy, errors } = useForm({ name: '' });
@@ -24,6 +27,10 @@ export default function Index({ groups }: Props) {
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [search, setSearch] = useState('');
+
+    const handleUserFilter = (userId: string) => {
+        router.get('/sms-groups', { ...filters, user_id: userId === 'all' ? '' : userId }, { preserveState: true });
+    };
 
     const filtered = groups.data.filter(g =>
         g.name.toLowerCase().includes(search.toLowerCase())
@@ -71,7 +78,7 @@ export default function Index({ groups }: Props) {
                     <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900 dark:text-white">
                         <Users className="h-6 w-6 text-blue-500" />
                         {t('SMS Groups')}
-                        <span className="ml-1 text-sm font-normal text-gray-400">({groups.data.length} {t('records')})</span>
+                        <span className="ml-1 text-sm font-normal text-gray-400">({groups.meta.total} {t('records')})</span>
                     </h1>
 
                     {/* Create Dialog */}
@@ -102,20 +109,45 @@ export default function Index({ groups }: Props) {
                     </Dialog>
                 </div>
 
-                {/* Search Bar */}
-                <div className="mt-4 relative">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                    <Input
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        placeholder={t('Search by group name...')}
-                        className="pl-9 pr-9"
-                    />
-                    {search && (
-                        <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                            <X className="h-4 w-4" />
-                        </button>
+                {/* Filters */}
+                <div className="mt-4 flex flex-col sm:flex-row gap-4">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                        <Input
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            placeholder={t('Search by group name...')}
+                            className="pl-9 pr-9"
+                        />
+                        {search && (
+                            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                <X className="h-4 w-4" />
+                            </button>
+                        )}
+                    </div>
+
+                    {users.length > 0 && (
+                        <div className="w-full sm:w-64">
+                            <Select value={filters.user_id || 'all'} onValueChange={handleUserFilter}>
+                                <SelectTrigger className="dark:bg-gray-700 dark:text-white">
+                                    <div className="flex items-center gap-2">
+                                        <UserIcon className="h-4 w-4 text-gray-400" />
+                                        <SelectValue placeholder={t('Filter by User')} />
+                                    </div>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">{t('All Users')}</SelectItem>
+                                    {users.map(u => (
+                                        <SelectItem key={u.id} value={u.id.toString()}>{u.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     )}
+
+                    <div className="sm:ml-auto">
+                        <PerPageSelect value={filters.per_page || 20} url="/sms-groups" />
+                    </div>
                 </div>
 
                 {/* Edit Dialog */}
@@ -175,9 +207,17 @@ export default function Index({ groups }: Props) {
                                     {group.name}
                                 </Link>
                                 {group.contacts_count !== undefined && (
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                                        {group.contacts_count} {t('contacts')}
-                                    </p>
+                                    <div className="flex items-center gap-4 mt-1">
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                            {group.contacts_count} {t('contacts')}
+                                        </p>
+                                        {group.user && (
+                                            <div className="flex items-center gap-1 text-xs text-blue-500 font-medium">
+                                                <UserIcon className="h-3 w-3" />
+                                                {group.user.name}
+                                            </div>
+                                        )}
+                                    </div>
                                 )}
                             </div>
                             <div className="flex items-center gap-2">
@@ -200,6 +240,10 @@ export default function Index({ groups }: Props) {
                             </div>
                         </div>
                     ))}
+                </div>
+
+                <div className="mt-6">
+                    <Pagination links={groups.links} meta={groups.meta} />
                 </div>
             </div>
         </AppLayout>

@@ -17,6 +17,15 @@ class SmsContactResource extends JsonResource
             'name'     => $this->name,
             'group_id' => $this->group_id,
             'group'    => $this->whenLoaded('group', fn () => $this->group->name),
+            'user'     => $this->whenLoaded('group', function () {
+                if ($this->group->relationLoaded('user')) {
+                    return [
+                        'id'   => $this->group->user->id,
+                        'name' => $this->group->user->name,
+                    ];
+                }
+                return null;
+            }),
         ];
     }
 }

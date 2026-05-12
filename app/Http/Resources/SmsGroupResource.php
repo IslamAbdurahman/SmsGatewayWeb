@@ -15,6 +15,12 @@ class SmsGroupResource extends JsonResource
             'id'             => $this->id,
             'name'           => $this->name,
             'contacts_count' => $this->whenCounted('contacts'),
+            'user'           => $this->whenLoaded('user', function () {
+                return [
+                    'id'   => $this->user->id,
+                    'name' => $this->user->name,
+                ];
+            }),
             'created_at'     => $this->created_at?->format('Y-m-d H:i'),
         ];
     }

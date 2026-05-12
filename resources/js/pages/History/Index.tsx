@@ -1,16 +1,14 @@
 import { useState } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { type BreadcrumbItem, type SmsHistory, type PaginatedData } from '@/types';
-import { MessageSquare, CheckCircle2, XCircle, Clock, Search, Filter, X, CheckCheck } from 'lucide-react';
+import { type BreadcrumbItem, type SmsHistory, type PaginatedData, type User } from '@/types';
+import { MessageSquare, CheckCircle2, XCircle, Clock, Search, Filter, X, CheckCheck, User as UserIcon } from 'lucide-react';
 import { useTranslate } from '@/hooks/use-translate';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatPhoneNumberIntl } from 'react-phone-number-input';
-
-
-
-
+import { Pagination } from '@/components/pagination';
+import { PerPageSelect } from '@/components/per-page-select';
 
 interface SimpleItem { id: number; name?: string; title?: string; }
 
@@ -21,16 +19,18 @@ interface Filters {
     to?: string;
     group_id?: string;
     template_id?: string;
+    user_id?: string;
 }
 
 interface Props {
-    history: PaginatedData<SmsHistory>;
+    history: PaginatedData<SmsHistory & { user?: { id: number; name: string } }>;
     filters: Filters;
     groups: SimpleItem[];
     templates: SimpleItem[];
+    users: User[];
 }
 
-export default function Index({ history, filters, groups, templates }: Props) {
+export default function Index({ history, filters, groups, templates, users }: Props) {
     const { t } = useTranslate();
 
     const breadcrumbs: BreadcrumbItem[] = [{ title: t('SMS History'), href: '/history' }];
@@ -46,15 +46,17 @@ export default function Index({ history, filters, groups, templates }: Props) {
     const [to,         setTo]         = useState(filters.to         ?? '');
     const [groupId,    setGroupId]    = useState(filters.group_id   ?? '');
     const [templateId, setTemplateId] = useState(filters.template_id ?? '');
+    const [userId,     setUserId]     = useState(filters.user_id     ?? '');
+    const [perPage,    setPerPage]    = useState(filters.per_page   ?? 20);
 
-    const buildParams = () => ({ search, status, from, to, group_id: groupId, template_id: templateId });
+    const buildParams = () => ({ search, status, from, to, group_id: groupId, template_id: templateId, user_id: userId, per_page: perPage });
 
     const applyFilters = () => {
         router.get('/history', buildParams(), { preserveScroll: true, replace: true });
     };
 
     const clearFilters = () => {
-        setSearch(''); setStatus(''); setFrom(''); setTo(''); setGroupId(''); setTemplateId('');
+        setSearch(''); setStatus(''); setFrom(''); setTo(''); setGroupId(''); setTemplateId(''); setUserId('');
         router.get('/history', {}, { preserveScroll: true, replace: true });
     };
 
@@ -63,7 +65,7 @@ export default function Index({ history, filters, groups, templates }: Props) {
         router.get('/history', params, { preserveScroll: true, replace: true });
     };
 
-    const hasFilters = search || status || from || to || groupId || templateId;
+    const hasFilters = search || status || from || to || groupId || templateId || userId;
 
     const selectCls = "h-8 rounded-md border border-input bg-background px-2 py-0 text-sm shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white";
 
@@ -123,6 +125,14 @@ export default function Index({ history, filters, groups, templates }: Props) {
                             {templates.map(t => <option key={t.id} value={t.id}>{t.title}</option>)}
                         </select>
 
+                        {/* User */}
+                        {users.length > 0 && (
+                            <select value={userId} onChange={e => setUserId(e.target.value)} className={selectCls}>
+                                <option value="">{t('All Users')}</option>
+                                {users.map(u => <option key={u.id} value={u.id.toString()}>{u.name}</option>)}
+                            </select>
+                        )}
+
                         {/* Date from-to */}
                         <Input type="date" value={from} onChange={e => setFrom(e.target.value)} className="h-8 w-36 text-sm" />
                         <span className="text-xs text-gray-400">—</span>
@@ -131,6 +141,11 @@ export default function Index({ history, filters, groups, templates }: Props) {
                         <Button onClick={applyFilters} size="sm" className="gap-1.5 h-8">
                             <Filter className="h-3.5 w-3.5" /> {t('Filter')}
                         </Button>
+
+                        <div className="ml-auto">
+                            <PerPageSelect value={filters.per_page || 20} url="/history" />
+                        </div>
+
                         {hasFilters && (
                             <Button variant="ghost" size="sm" onClick={clearFilters} className="h-8 gap-1 text-gray-500">
                                 <X className="h-3.5 w-3.5" /> {t('Clear')}
@@ -153,6 +168,9 @@ export default function Index({ history, filters, groups, templates }: Props) {
                             {templateId && (
                                 <Badge label={`${t('Templates')}: ${templates.find(t => String(t.id) === templateId)?.title}`} onRemove={() => removeBadge('template_id')} color="amber" />
                             )}
+                            {userId && (
+                                <Badge label={`${t('User')}: ${users.find(u => String(u.id) === userId)?.name}`} onRemove={() => removeBadge('user_id')} color="cyan" />
+                            )}
                             {(from || to) && (
                                 <Badge label={[from, to].filter(Boolean).join(' — ')} onRemove={() => { removeBadge('from'); removeBadge('to'); }} color="orange" />
                             )}
@@ -165,7 +183,7 @@ export default function Index({ history, filters, groups, templates }: Props) {
                     <table className="w-full text-sm">
                         <thead className="bg-gray-50 dark:bg-gray-700/50">
                             <tr>
-                                {[t('Phone / Name'), t('Group'), t('Message / Template'), t('Status'), t('Time')].map(h => (
+                                {[t('Phone / Name'), t('Group'), t('Message / Template'), t('User'), t('Status'), t('Time')].map(h => (
                                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                                         {h}
                                     </th>
@@ -173,9 +191,9 @@ export default function Index({ history, filters, groups, templates }: Props) {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                            {history.data.length === 0 && (
+                             {history.data.length === 0 && (
                                 <tr>
-                                    <td colSpan={5} className="px-4 py-16 text-center text-gray-400">
+                                    <td colSpan={6} className="px-4 py-16 text-center text-gray-400">
                                         {hasFilters ? t('No results found') : t('No SMS sent yet')}
                                     </td>
                                 </tr>
@@ -203,6 +221,14 @@ export default function Index({ history, filters, groups, templates }: Props) {
                                                 <span className="text-xs text-gray-400">{item.template.title}</span>
                                             )}
                                         </td>
+                                        <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-xs">
+                                            {item.user ? (
+                                                <div className="flex items-center gap-1 text-blue-500 font-medium">
+                                                    <UserIcon className="h-3 w-3" />
+                                                    {item.user.name}
+                                                </div>
+                                            ) : '—'}
+                                        </td>
                                         <td className="px-4 py-3">
                                             <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${cfg.cls}`}>
                                                 <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
@@ -219,27 +245,11 @@ export default function Index({ history, filters, groups, templates }: Props) {
                     </table>
                 </div>
 
-                {/* Pagination */}
-                {history.meta.last_page > 1 && (
-                    <div className="mt-4 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-                        <span>{t('Total')}: {history.meta.total} {t('records')}</span>
-                        <div className="flex gap-2">
-                            {history.links.prev && (
-                                <Link href={history.links.prev} className="rounded border px-3 py-1 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700">
-                                    ← {t('Previous')}
-                                </Link>
-                            )}
-                            <span className="rounded border px-3 py-1 dark:border-gray-600">
-                                {history.meta.current_page} / {history.meta.last_page}
-                            </span>
-                            {history.links.next && (
-                                <Link href={history.links.next} className="rounded border px-3 py-1 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700">
-                                    {t('Next')} →
-                                </Link>
-                            )}
-                        </div>
-                    </div>
-                )}
+                </div>
+
+                <div className="mt-6">
+                    <Pagination links={history.links} meta={history.meta} />
+                </div>
             </div>
         </AppLayout>
     );

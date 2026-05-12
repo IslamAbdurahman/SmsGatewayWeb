@@ -8,16 +8,22 @@ use App\Http\Resources\SmsHistoryResource;
 use App\Models\SmsGroup;
 use App\Models\SmsHistory;
 use App\Models\SmsTemplate;
+use App\Models\User;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class SmsHistoryController extends Controller
 {
-    public function index(): Response
+    public function index(\Illuminate\Http\Request $request): Response
     {
-        $query = SmsHistory::with(['contact.group', 'template'])->latest('sent_at');
+        $isAdmin = auth()->user()->hasRole('Admin');
+        $query = SmsHistory::with(['contact.group', 'template', 'user'])->latest('sent_at');
 
-        if (!auth()->user()->hasRole('Admin')) {
+        if ($isAdmin) {
+            if ($userId = $request->input('user_id')) {
+                $query->where('user_id', $userId);
+            }
+        } else {
             $query->where('user_id', auth()->id());
         }
 
@@ -62,11 +68,15 @@ class SmsHistoryController extends Controller
         $templates = SmsTemplate::when(!$isAdmin, fn ($q) => $q->where('user_id', $userId))
                                 ->get(['id', 'title']);
 
+        $perPage = $request->input('per_page', 20);
+        $perPage = $perPage === 'all' ? 1000000 : (int)$perPage;
+
         return Inertia::render('History/Index', [
-            'history'   => SmsHistoryResource::collection($query->paginate(25)->withQueryString()),
-            'filters'   => request()->only(['status', 'search', 'from', 'to', 'group_id', 'template_id']),
+            'history'   => SmsHistoryResource::collection($query->paginate($perPage)->withQueryString()),
+            'filters'   => $request->only(['status', 'search', 'from', 'to', 'group_id', 'template_id', 'user_id', 'per_page']),
             'groups'    => $groups,
             'templates' => $templates,
+            'users'     => $isAdmin ? User::all(['id', 'name']) : [],
         ]);
     }
 }

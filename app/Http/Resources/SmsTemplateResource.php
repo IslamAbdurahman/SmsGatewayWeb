@@ -15,6 +15,12 @@ class SmsTemplateResource extends JsonResource
             'id'           => $this->id,
             'title'        => $this->title,
             'message_body' => $this->message_body,
+            'user'         => $this->whenLoaded('user', function () {
+                return [
+                    'id'   => $this->user->id,
+                    'name' => $this->user->name,
+                ];
+            }),
         ];
     }
 }
