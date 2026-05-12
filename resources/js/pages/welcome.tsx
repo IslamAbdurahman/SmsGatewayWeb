@@ -73,8 +73,8 @@ export default function Welcome() {
             <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 dark:bg-[#0a0a0a]/80 dark:border-gray-800">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <div className="h-8 w-8 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                            <Send className="h-5 w-5 text-white" />
+                        <div className="h-8 w-8 rounded-lg flex items-center justify-center overflow-hidden shadow-lg shadow-indigo-500/10">
+                            <img src="/images/smslogo.png" alt="Logo" className="h-full w-full object-cover" />
                         </div>
                         <span className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-400 dark:to-violet-400">
                             GsmSms
@@ -215,8 +215,8 @@ export default function Welcome() {
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex flex-col md:flex-row justify-between items-center gap-8">
                             <div className="flex items-center gap-2">
-                                <div className="h-6 w-6 bg-indigo-600 rounded flex items-center justify-center">
-                                    <Send className="h-4 w-4 text-white" />
+                                <div className="h-6 w-6 rounded flex items-center justify-center overflow-hidden">
+                                    <img src="/images/smslogo.png" alt="Logo" className="h-full w-full object-cover" />
                                 </div>
                                 <span className="text-lg font-bold tracking-tight">{t('GsmSms')}</span>
                             </div>
