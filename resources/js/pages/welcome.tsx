@@ -17,8 +17,21 @@ import LanguageSwitcher from '@/components/language-switcher';
 import { useTranslate } from '@/hooks/use-translate';
 
 export default function Welcome() {
-    const { auth } = usePage<SharedData>().props;
+    const { auth, locale, appUrl } = usePage<SharedData & { locale: string; appUrl: string }>().props;
     const { t } = useTranslate();
+
+    const seoTitle       = t('seo_title');
+    const seoDescription = t('seo_description');
+    const seoKeywords    = t('seo_keywords');
+    const canonicalUrl   = (appUrl ?? 'https://sms.1call.uz').replace(/\/$/, '');
+
+    // hreflang alternate URLs
+    const alternateLangs = [
+        { hreflang: 'uz', href: `${canonicalUrl}/?locale=uz` },
+        { hreflang: 'ru', href: `${canonicalUrl}/?locale=ru` },
+        { hreflang: 'en', href: `${canonicalUrl}/?locale=en` },
+        { hreflang: 'x-default', href: canonicalUrl },
+    ];
 
     const features = [
         {
@@ -60,7 +73,46 @@ export default function Welcome() {
 
     return (
         <div className="min-h-screen bg-white text-gray-900 selection:bg-indigo-100 dark:bg-[#0a0a0a] dark:text-gray-100">
-            <Head title={t('Professional SMS Gateway')} />
+            <Head>
+                <title>{seoTitle}</title>
+                <meta name="description" content={seoDescription} />
+                <meta name="keywords" content={seoKeywords} />
+                <meta name="robots" content="index, follow" />
+                <link rel="canonical" href={canonicalUrl} />
+
+                {/* hreflang for multilingual SEO */}
+                {alternateLangs.map(({ hreflang, href }) => (
+                    <link key={hreflang} rel="alternate" hrefLang={hreflang} href={href} />
+                ))}
+
+                {/* Open Graph */}
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content={canonicalUrl} />
+                <meta property="og:title" content={seoTitle} />
+                <meta property="og:description" content={seoDescription} />
+                <meta property="og:image" content={`${canonicalUrl}/images/smslogo.png`} />
+                <meta property="og:locale" content={locale === 'uz' ? 'uz_UZ' : locale === 'ru' ? 'ru_RU' : 'en_US'} />
+                <meta property="og:site_name" content="GsmSms" />
+
+                {/* Twitter / X Card */}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={seoTitle} />
+                <meta name="twitter:description" content={seoDescription} />
+                <meta name="twitter:image" content={`${canonicalUrl}/images/smslogo.png`} />
+
+                {/* JSON-LD Structured Data */}
+                <script type="application/ld+json">{JSON.stringify({
+                    "@context": "https://schema.org",
+                    "@type": "SoftwareApplication",
+                    "name": "GsmSms",
+                    "url": canonicalUrl,
+                    "applicationCategory": "BusinessApplication",
+                    "operatingSystem": "Web",
+                    "description": seoDescription,
+                    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+                    "author": { "@type": "Organization", "name": "GsmSms", "url": canonicalUrl }
+                })}</script>
+            </Head>
 
             {/* Background Decorative Elements */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">

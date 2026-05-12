@@ -205,5 +205,8 @@
     "Record updated successfully.": "Record updated successfully.",
     "Record deleted successfully.": "Record deleted successfully.",
     "You cannot delete yourself.": "You cannot delete yourself.",
-    "Cannot delete user with existing data (groups, templates or history).": "Cannot delete user with existing data (groups, templates or history)."
+    "Cannot delete user with existing data (groups, templates or history).": "Cannot delete user with existing data (groups, templates or history).",
+    "seo_title": "GsmSms — Professional SMS Gateway | Send SMS via GSM Modem",
+    "seo_description": "GsmSms — bulk SMS sending platform via GSM modem. Manage contacts, create templates, track delivery history. Trusted across Uzbekistan and CIS countries.",
+    "seo_keywords": "SMS sending, bulk SMS, GSM modem, SMS gateway, SMS platform, SMS service, Uzbekistan SMS"
 }

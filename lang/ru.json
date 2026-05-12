@@ -205,5 +205,8 @@
     "Record updated successfully.": "Запись успешно обновлена.",
     "Record deleted successfully.": "Запись успешно удалена.",
     "You cannot delete yourself.": "Вы не можете удалить самого себя.",
-    "Cannot delete user with existing data (groups, templates or history).": "Нельзя удалить пользователя, так как у него есть данные (группы, шаблоны или история)."
+    "Cannot delete user with existing data (groups, templates or history).": "Нельзя удалить пользователя, так как у него есть данные (группы, шаблоны или история).",
+    "seo_title": "GsmSms — Профессиональный SMS Шлюз | Отправка SMS через GSM Модем",
+    "seo_description": "GsmSms — платформа для массовой рассылки SMS через GSM модем. Управляйте контактами, создавайте шаблоны, отслеживайте историю отправки. Для Узбекистана и стран СНГ.",
+    "seo_keywords": "SMS рассылка, массовая SMS, GSM модем, SMS шлюз, SMS платформа, SMS сервис, SMS Узбекистан"
 }

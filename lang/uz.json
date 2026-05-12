@@ -205,5 +205,8 @@
     "Record updated successfully.": "Muvaffaqiyatli yangilandi.",
     "Record deleted successfully.": "Muvaffaqiyatli o'chirildi.",
     "You cannot delete yourself.": "Siz o'zingizni o'chira olmaysiz.",
-    "Cannot delete user with existing data (groups, templates or history).": "Foydalanuvchini o'chirib bo'lmaydi, chunki unda ma'lumotlar (guruhlar, shablonlar yoki tarix) mavjud."
+    "Cannot delete user with existing data (groups, templates or history).": "Foydalanuvchini o'chirib bo'lmaydi, chunki unda ma'lumotlar (guruhlar, shablonlar yoki tarix) mavjud.",
+    "seo_title": "GsmSms — Professional SMS Gateway | GSM Modem orqali SMS yuborish",
+    "seo_description": "GsmSms — GSM modem orqali ommaviy SMS yuborish platformasi. Kontaktlarni boshqaring, shablonlar yarating, yuborish tarixini kuzating. O'zbekiston va MDH davlatlari uchun.",
+    "seo_keywords": "SMS yuborish, ommaviy SMS, GSM modem, SMS gateway, SMS platform, SMS xizmati, O'zbekiston SMS"
 }
