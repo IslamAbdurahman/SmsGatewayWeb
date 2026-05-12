@@ -62,6 +62,12 @@ Run migrations and seeders:
 php artisan migrate --seed
 ```
 
+Fix permissions for storage and cache:
+```bash
+sudo chown -R www-data:www-data storage bootstrap/cache
+sudo chmod -R 775 storage bootstrap/cache
+```
+
 ### 6. Run the Application
 Start the development server and Vite:
 ```bash
