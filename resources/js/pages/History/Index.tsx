@@ -237,14 +237,11 @@ export default function Index({ history, filters, groups, templates, users }: Pr
                                         </td>
                                         <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-xs">
                                             {item.sent_at}
-                                        </td>
                                     </tr>
                                 );
                             })}
                         </tbody>
                     </table>
-                </div>
-
                 </div>
 
                 <div className="mt-6">
