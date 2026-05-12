@@ -186,6 +186,13 @@ export default function Index({ groups, templates }: Props) {
 
             setPort(selectedPort);
             setModemName(getModemInfo(selectedPort));
+
+            // Set DTR and RTS signals - many modems require this to transmit data
+            try {
+                await selectedPort.setSignals({ dataTerminalReady: true, requestToSend: true });
+            } catch (sigErr) {
+                console.warn('Could not set signals:', sigErr);
+            }
         } catch (err) {
             console.error('Port ulashda xatolik:', err);
             alert(t('Could not connect to modem. It might be busy or used by another program.'));
@@ -207,6 +214,9 @@ export default function Index({ groups, templates }: Props) {
         
         const startTime = Date.now();
         const targets = Array.isArray(waitFor) ? waitFor : [waitFor];
+        
+        // Initial delay to give modem time to respond
+        await delay(200);
         
         while (Date.now() - startTime < timeout) {
             if (targets.some(t => modemBuffer.current.toUpperCase().includes(t.toUpperCase()))) {
