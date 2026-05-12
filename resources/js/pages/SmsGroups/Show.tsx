@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { type BreadcrumbItem, type SmsGroup, type SmsContact } from '@/types';
+import { Pagination } from '@/components/pagination';
+import { PerPageSelect } from '@/components/per-page-select';
+import { type BreadcrumbItem, type SmsGroup, type SmsContact, type PaginatedData } from '@/types';
 import { Pencil, Trash2, Plus, ArrowLeft, Upload, FileSpreadsheet, Download, Save, X } from 'lucide-react';
 import { PhoneInput } from '@/components/phone-input';
 import { formatPhoneNumberIntl } from 'react-phone-number-input';
@@ -13,10 +15,11 @@ import { useTranslate } from '@/hooks/use-translate';
 
 interface Props {
     group: SmsGroup;
-    contacts: SmsContact[];
+    contacts: PaginatedData<SmsContact>;
+    filters: { per_page?: string };
 }
 
-export default function Show({ group, contacts }: Props) {
+export default function Show({ group, contacts, filters }: Props) {
     const { t } = useTranslate();
     const breadcrumbs: BreadcrumbItem[] = [
         { title: t('SMS Groups'), href: '/sms-groups' },
@@ -207,6 +210,8 @@ export default function Show({ group, contacts }: Props) {
                     </div>
 
                     <div className="flex items-center gap-2">
+                        <PerPageSelect value={filters.per_page || 20} url={`/sms-groups/${group.id}`} />
+
                         {/* Excel Import Dialog */}
                         <Dialog open={importOpen} onOpenChange={setImportOpen}>
                             <DialogTrigger asChild>
@@ -362,14 +367,14 @@ export default function Show({ group, contacts }: Props) {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                            {contacts.length === 0 ? (
+                            {contacts.data.length === 0 ? (
                                 <tr>
                                     <td colSpan={3} className="px-6 py-12 text-center text-gray-500">
                                         {t('No contacts yet. You can add them via Excel or manually.')}
                                     </td>
                                 </tr>
                             ) : (
-                                contacts.map((contact) => (
+                                contacts.data.map((contact) => (
                                     <tr key={contact.id} className="transition hover:bg-gray-50/50 dark:hover:bg-gray-700/50">
                                         <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
                                             {contact.name || <span className="italic text-gray-400">{t('No Name')}</span>}
@@ -402,6 +407,10 @@ export default function Show({ group, contacts }: Props) {
                             )}
                         </tbody>
                     </table>
+                </div>
+
+                <div className="mt-6">
+                    <Pagination links={contacts.links} meta={contacts.meta} />
                 </div>
 
                 {/* Edit Contact Dialog */}

@@ -70,6 +70,24 @@ php artisan serve
 npm run dev
 ```
 
+### 7. Queue Worker (Supervisor)
+For production environments, use Supervisor to keep the queue worker running:
+
+```ini
+[program:gsmsms-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /path/to/your/project/artisan queue:work --sleep=3 --tries=3 --max-time=3600
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=www-data
+numprocs=1
+redirect_stderr=true
+stdout_logfile=/path/to/your/project/storage/logs/worker.log
+stopwaitsecs=3600
+```
+
 ## 👨‍💻 Developer
 
 Built with ❤️ by **Islam Abdurahman**.

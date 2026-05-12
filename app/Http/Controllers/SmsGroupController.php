@@ -56,15 +56,19 @@ class SmsGroupController extends Controller
         return redirect()->back()->with('success', __('Record updated successfully.'));
     }
 
-    public function show(SmsGroup $smsGroup): Response
+    public function show(\Illuminate\Http\Request $request, SmsGroup $smsGroup): Response
     {
         if (!auth()->user()->hasRole('Admin')) {
             abort_if($smsGroup->user_id !== auth()->id(), 403);
         }
 
+        $perPage = $request->input('per_page', 20);
+        $perPage = $perPage === 'all' ? 1000000 : (int)$perPage;
+
         return Inertia::render('SmsGroups/Show', [
             'group'    => $smsGroup,
-            'contacts' => $smsGroup->contacts()->latest('id')->get(),
+            'contacts' => $smsGroup->contacts()->latest('id')->paginate($perPage)->withQueryString(),
+            'filters'  => $request->only(['per_page']),
         ]);
     }
 
