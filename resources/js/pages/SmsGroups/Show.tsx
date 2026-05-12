@@ -212,7 +212,7 @@ export default function Show({ group, contacts, filters }: Props) {
                                     </Button>
                                 </div>
                             )}
-                            <p className="text-sm text-gray-500">{contacts.length} {t('records')}</p>
+                            <p className="text-sm text-gray-500">{contacts.meta.total} {t('records')}</p>
                         </div>
                     </div>
 
