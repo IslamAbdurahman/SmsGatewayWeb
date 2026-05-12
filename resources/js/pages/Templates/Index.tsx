@@ -208,6 +208,7 @@ export default function Index({ templates, users, filters }: Props) {
                                 onValueChange={handleUserFilter}
                                 allLabel={t('All Users')}
                                 options={users.map(u => ({ value: u.id.toString(), label: u.name }))}
+                                triggerClassName="w-full"
                             />
                         </div>
                     )}

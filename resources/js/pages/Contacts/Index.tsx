@@ -158,6 +158,7 @@ export default function Index({ contacts, groups, users, filters }: Props) {
                             onValueChange={setGroupFilter}
                             allLabel={t('All Group')}
                             options={groups.map(g => ({ value: String(g.id), label: g.name }))}
+                            triggerClassName="w-full"
                         />
                     </div>
 
@@ -168,6 +169,7 @@ export default function Index({ contacts, groups, users, filters }: Props) {
                                 onValueChange={handleUserFilter}
                                 allLabel={t('All Users')}
                                 options={users.map(u => ({ value: u.id.toString(), label: u.name }))}
+                                triggerClassName="w-full"
                             />
                         </div>
                     )}
