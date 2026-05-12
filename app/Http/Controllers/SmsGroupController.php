@@ -82,9 +82,11 @@ class SmsGroupController extends Controller
             'file' => 'required|mimes:xlsx,xls,csv|max:10240',
         ]);
 
-        // Store file to disk so the job can read it
-        $filePath = $request->file('file')->store('imports/contacts', 'local');
-        $fullPath = storage_path('app/' . $filePath);
+        // Store file with original extension so Excel can detect type
+        $file = $request->file('file');
+        $extension = $file->getClientOriginalExtension();
+        $fileName = \Illuminate\Support\Str::random(40) . '.' . $extension;
+        $filePath = $file->storeAs('imports/contacts', $fileName, 'local');
 
         // Unique key used to poll import status
         $cacheKey = 'import_' . $smsGroup->id . '_' . auth()->id() . '_' . time();
