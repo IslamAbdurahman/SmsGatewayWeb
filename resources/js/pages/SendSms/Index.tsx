@@ -161,8 +161,35 @@ export default function Index({ groups, templates }: Props) {
 
     const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
-    const writeToPort = async (writer: any, text: string) => {
-        await writer.write(new TextEncoder().encode(text));
+    const sendCommand = async (port: any, command: string, timeout = 5000): Promise<string> => {
+        if (!port?.writable || !port?.readable) return 'ERROR: Port not ready';
+        
+        const writer = port.writable.getWriter();
+        const reader = port.readable.getReader();
+        const decoder = new TextDecoder();
+        let response = '';
+        
+        try {
+            await writer.write(new TextEncoder().encode(command));
+            
+            const startTime = Date.now();
+            while (Date.now() - startTime < timeout) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                response += decoder.decode(value);
+                if (response.includes('OK') || response.includes('ERROR') || response.includes('>')) {
+                    break;
+                }
+            }
+            return response;
+        } catch (err) {
+            console.error("Command error:", err);
+            return 'ERROR: ' + String(err);
+        } finally {
+            writer.releaseLock();
+            reader.cancel(); // Cancel to allow releasing lock
+            reader.releaseLock();
+        }
     };
 
     const showNotification = (title: string, body: string) => {
@@ -223,12 +250,15 @@ export default function Index({ groups, templates }: Props) {
 
         const results: { contact_id: number; status: string; message_body: string }[] = [];
 
-        let writer;
         try {
-            if (!port.writable) {
-                throw new Error("Port is not writable. Please try to disconnect and connect the modem again.");
+            // 1. Check SIM Status
+            const cpin = await sendCommand(port, "AT+CPIN?\r");
+            if (!cpin.includes("READY")) {
+                setIsSending(false);
+                setSendProgress(null);
+                alert(t("SIM card is not ready or missing! Please check the modem."));
+                return;
             }
-            writer = port.writable.getWriter();
 
             for (let i = 0; i < newContacts.length; i++) {
                 const contact = newContacts[i];
@@ -244,17 +274,23 @@ export default function Index({ groups, templates }: Props) {
                 // Replace placeholders
                 const personalizedMessage = messageBody.replace(/\[name\]/gi, contact.name || '');
 
-                let status: 'sent' | 'failed' = 'sent';
+                let status: 'sent' | 'failed' = 'failed';
                 try {
-                    await writeToPort(writer, "AT+CMGF=1\r");
-                    await delay(1000);
-                    await writeToPort(writer, `AT+CMGS="${contact.phone}"\r`);
-                    await delay(1000);
-                    await writeToPort(writer, `${personalizedMessage}\x1A`);
-                    await delay(2000);
+                    // Set text mode
+                    const modeResp = await sendCommand(port, "AT+CMGF=1\r");
+                    if (modeResp.includes("OK")) {
+                        // Start SMS sending
+                        const cmgsResp = await sendCommand(port, `AT+CMGS="${contact.phone}"\r`);
+                        if (cmgsResp.includes(">")) {
+                            // Send message body + Ctrl+Z
+                            const finalResp = await sendCommand(port, `${personalizedMessage}\x1A`, 15000); // Wait up to 15s for delivery
+                            if (finalResp.includes("+CMGS:") || finalResp.includes("OK")) {
+                                status = 'sent';
+                            }
+                        }
+                    }
                 } catch (err) {
                     console.error("SMS yuborishda xato: " + contact.phone, err);
-                    status = 'failed';
                 }
 
                 results.push({ contact_id: contact.id, status, message_body: personalizedMessage });
@@ -265,12 +301,15 @@ export default function Index({ groups, templates }: Props) {
                 ));
 
                 setSendProgress({ current: i + 1, total: newContacts.length });
+                
+                // Small delay between messages to let the modem breathe
+                await delay(1000);
             }
         } catch (globalErr) {
             console.error("Umumiy port xatosi:", globalErr);
             alert(t("An error occurred while communicating with the modem."));
         } finally {
-            if (writer) writer.releaseLock();
+            // Port is handled within sendCommand
         }
 
         // Post to backend (stay on page)
