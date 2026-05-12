@@ -42,8 +42,6 @@ export default function Index({ groups, templates }: Props) {
     // Results list (builds up in real-time)
     const [sentResults, setSentResults] = useState<SentResult[]>([]);
     const resultsEndRef = useRef<HTMLDivElement>(null);
-    const modemBuffer = useRef<string>('');
-    const readActive = useRef<boolean>(false);
 
     // Summary after post to backend
     const [summary, setSummary] = useState<string | null>(null);
@@ -60,42 +58,11 @@ export default function Index({ groups, templates }: Props) {
         resultsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [sentResults]);
 
-    useEffect(() => {
-        if (!port || readActive.current) return;
-        
-        let active = true;
-        readActive.current = true;
-
-        const readLoop = async () => {
-            try {
-                const reader = port.readable.getReader();
-                const decoder = new TextDecoder();
-                while (active) {
-                    const { value, done } = await reader.read();
-                    if (done) break;
-                    const text = decoder.decode(value);
-                    modemBuffer.current = (modemBuffer.current + text).slice(-2000);
-                    console.log("Modem:", text);
-                }
-                reader.releaseLock();
-            } catch (err) {
-                console.error("Read loop error:", err);
-            } finally {
-                readActive.current = false;
-            }
-        };
-
-        readLoop();
-        return () => { 
-            active = false;
-        };
-    }, [port]);
-
-    // Cleanup port on unmount
+    // Cleanup port on unmount to prevent "busy" state
     useEffect(() => {
         return () => {
-            if (port) {
-                port.close().catch(() => {});
+            if (port && port.readable) {
+                port.close().catch((err: any) => console.error('Unmount port close error:', err));
             }
         };
     }, [port]);
@@ -186,13 +153,6 @@ export default function Index({ groups, templates }: Props) {
 
             setPort(selectedPort);
             setModemName(getModemInfo(selectedPort));
-
-            // Set DTR and RTS signals - many modems require this to transmit data
-            try {
-                await selectedPort.setSignals({ dataTerminalReady: true, requestToSend: true });
-            } catch (sigErr) {
-                console.warn('Could not set signals:', sigErr);
-            }
         } catch (err) {
             console.error('Port ulashda xatolik:', err);
             alert(t('Could not connect to modem. It might be busy or used by another program.'));
@@ -201,35 +161,13 @@ export default function Index({ groups, templates }: Props) {
 
     const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
-    const sendCommand = async (command: string, waitFor: string | string[], timeout = 5000): Promise<boolean> => {
-        if (!port?.writable) return false;
-        
-        modemBuffer.current = ''; // Clear for new command
-        const writer = port.writable.getWriter();
-        try {
-            await writer.write(new TextEncoder().encode(command));
-        } finally {
-            writer.releaseLock();
-        }
-        
-        const startTime = Date.now();
-        const targets = Array.isArray(waitFor) ? waitFor : [waitFor];
-        
-        // Initial delay to give modem time to respond
-        await delay(200);
-        
-        while (Date.now() - startTime < timeout) {
-            if (targets.some(t => modemBuffer.current.toUpperCase().includes(t.toUpperCase()))) {
-                return true;
-            }
-            await delay(100);
-        }
-        return false;
+    const writeToPort = async (writer: any, text: string) => {
+        await writer.write(new TextEncoder().encode(text));
     };
 
     const showNotification = (title: string, body: string) => {
         if ("Notification" in window && Notification.permission === "granted") {
-            new Notification(title, { body, icon: '/logo.png' });
+            new Notification(title, { body, icon: '/images/smslogo.png' });
         }
     };
 
@@ -285,15 +223,12 @@ export default function Index({ groups, templates }: Props) {
 
         const results: { contact_id: number; status: string; message_body: string }[] = [];
 
+        let writer;
         try {
-            // 1. Check SIM Status
-            const isSimReady = await sendCommand("AT+CPIN?\r", "READY");
-            if (!isSimReady) {
-                setIsSending(false);
-                setSendProgress(null);
-                alert(t("SIM card is not ready or missing! Please check the modem."));
-                return;
+            if (!port.writable) {
+                throw new Error("Port is not writable. Please try to disconnect and connect the modem again.");
             }
+            writer = port.writable.getWriter();
 
             for (let i = 0; i < newContacts.length; i++) {
                 const contact = newContacts[i];
@@ -306,24 +241,20 @@ export default function Index({ groups, templates }: Props) {
                     name: contact.name ?? undefined,
                 }]);
 
+                // Replace placeholders
                 const personalizedMessage = messageBody.replace(/\[name\]/gi, contact.name || '');
 
-                let status: 'sent' | 'failed' = 'failed';
+                let status: 'sent' | 'failed' = 'sent';
                 try {
-                    // Set text mode
-                    await sendCommand("AT+CMGF=1\r", "OK");
-                    
-                    // Start SMS sending
-                    const hasPrompt = await sendCommand(`AT+CMGS="${contact.phone}"\r`, ">");
-                    if (hasPrompt) {
-                        // Send message body + Ctrl+Z
-                        const isDelivered = await sendCommand(`${personalizedMessage}\x1A`, ["+CMGS:", "OK"], 15000);
-                        if (isDelivered) {
-                            status = 'sent';
-                        }
-                    }
+                    await writeToPort(writer, "AT+CMGF=1\r");
+                    await delay(1000);
+                    await writeToPort(writer, `AT+CMGS="${contact.phone}"\r`);
+                    await delay(1000);
+                    await writeToPort(writer, `${personalizedMessage}\x1A`);
+                    await delay(2000);
                 } catch (err) {
-                    console.error("SMS error: " + contact.phone, err);
+                    console.error("SMS yuborishda xato: " + contact.phone, err);
+                    status = 'failed';
                 }
 
                 results.push({ contact_id: contact.id, status, message_body: personalizedMessage });
@@ -334,14 +265,12 @@ export default function Index({ groups, templates }: Props) {
                 ));
 
                 setSendProgress({ current: i + 1, total: newContacts.length });
-                await delay(500); // Small pause
             }
         } catch (globalErr) {
-            console.error("Global port error:", globalErr);
+            console.error("Umumiy port xatosi:", globalErr);
             alert(t("An error occurred while communicating with the modem."));
         } finally {
-            setIsSending(false);
-            setSendProgress(null);
+            if (writer) writer.releaseLock();
         }
 
         // Post to backend (stay on page)

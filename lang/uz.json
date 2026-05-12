@@ -196,6 +196,5 @@
     "Cannot delete template used in message history.": "Xabarlar tarixida ishlatilgan shablonni o'chirib bo'lmaydi.",
     "Record created successfully.": "Muvaffaqiyatli yaratildi.",
     "Record updated successfully.": "Muvaffaqiyatli yangilandi.",
-    "Record deleted successfully.": "Muvaffaqiyatli o'chirildi.",
-    "SIM card is not ready or missing! Please check the modem.": "SIM-karta tayyor emas yoki mavjud emas! Modemni tekshiring."
+    "Record deleted successfully.": "Muvaffaqiyatli o'chirildi."
 }

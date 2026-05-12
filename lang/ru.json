@@ -196,6 +196,5 @@
     "Cannot delete template used in message history.": "Нельзя удалить шаблон, использованный в истории сообщений.",
     "Record created successfully.": "Запись успешно создана.",
     "Record updated successfully.": "Запись успешно обновлена.",
-    "Record deleted successfully.": "Запись успешно удалена.",
-    "SIM card is not ready or missing! Please check the modem.": "SIM-карта не готова или отсутствует! Пожалуйста, проверьте модем."
+    "Record deleted successfully.": "Запись успешно удалена."
 }

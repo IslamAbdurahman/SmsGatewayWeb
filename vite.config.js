@@ -25,12 +25,12 @@ export default defineConfig({
                 theme_color: '#3b82f6',
                 icons: [
                     {
-                        src: '/logo.png',
+                        src: '/images/smslogo.png',
                         sizes: '192x192',
                         type: 'image/png'
                     },
                     {
-                        src: '/logo.png',
+                        src: '/images/smslogo.png',
                         sizes: '512x512',
                         type: 'image/png'
                     }
