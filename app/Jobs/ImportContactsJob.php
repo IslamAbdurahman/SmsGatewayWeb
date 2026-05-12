@@ -9,6 +9,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ImportContactsJob implements ShouldQueue
@@ -26,9 +27,13 @@ class ImportContactsJob implements ShouldQueue
 
     public function handle(): void
     {
+        Log::info('ImportContactsJob started', ['group_id' => $this->groupId, 'file' => $this->filePath]);
+        
         $import = new ContactsImport($this->groupId);
 
         Excel::import($import, $this->filePath, 'local');
+        
+        Log::info('Excel::import finished');
 
         // Store result summary in cache for 10 minutes so the frontend can read it
         Cache::put($this->cacheKey, [
@@ -46,6 +51,7 @@ class ImportContactsJob implements ShouldQueue
 
     public function failed(\Throwable $e): void
     {
+        Log::error('ImportContactsJob failed', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
         Cache::put($this->cacheKey, [
             'status' => 'failed',
             'error'  => $e->getMessage(),

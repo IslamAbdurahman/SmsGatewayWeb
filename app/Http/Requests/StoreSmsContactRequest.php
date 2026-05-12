@@ -14,7 +14,14 @@ class StoreSmsContactRequest extends FormRequest
     {
         return [
             'group_id' => ['required', 'exists:sms_groups,id'],
-            'phone'    => ['required', 'string', 'max:20'],
+            'phone'    => [
+                'required', 
+                'string', 
+                'max:20',
+                \Illuminate\Validation\Rule::unique('sms_contacts')
+                    ->where('group_id', $this->group_id)
+                    ->ignore($this->route('contact'))
+            ],
             'name'     => ['nullable', 'string', 'max:255'],
         ];
     }
