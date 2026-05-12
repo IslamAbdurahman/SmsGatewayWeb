@@ -2,103 +2,121 @@ import { Link } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslate } from '@/hooks/use-translate';
 
+interface PaginationLinks {
+    first: string | null;
+    last: string | null;
+    prev: string | null;
+    next: string | null;
+}
+
+interface PaginationMeta {
+    current_page: number;
+    last_page: number;
+    total: number;
+    from?: number;
+    to?: number;
+}
+
 interface Props {
-    links: { url: string | null; label: string; active: boolean }[];
-    meta: {
-        current_page: number;
-        last_page: number;
-        total: number;
-        from: number;
-        to: number;
-    };
+    links: PaginationLinks;
+    meta: PaginationMeta;
 }
 
 export function Pagination({ links, meta }: Props) {
     const { t } = useTranslate();
 
-    if (meta.last_page <= 1 || !links || links.length === 0) return null;
+    if (!meta || meta.last_page <= 1) return null;
+
+    const pages = Array.from({ length: meta.last_page }, (_, i) => i + 1);
+
+    // Build page URL by replacing page param in first link or constructing
+    const buildPageUrl = (page: number): string => {
+        const base = links.first ?? links.next ?? links.prev ?? '';
+        try {
+            const url = new URL(base);
+            url.searchParams.set('page', String(page));
+            return url.pathname + url.search;
+        } catch {
+            return `?page=${page}`;
+        }
+    };
+
+    // Show at most ~7 page buttons around current page
+    const getVisiblePages = () => {
+        const total = meta.last_page;
+        const current = meta.current_page;
+        if (total <= 7) return pages;
+        const start = Math.max(1, current - 2);
+        const end = Math.min(total, current + 2);
+        const visible: (number | '...')[] = [];
+        if (start > 1) { visible.push(1); if (start > 2) visible.push('...'); }
+        for (let i = start; i <= end; i++) visible.push(i);
+        if (end < total) { if (end < total - 1) visible.push('...'); visible.push(total); }
+        return visible;
+    };
 
     return (
-        <div className="flex items-center justify-between px-4 py-3 sm:px-6">
-            <div className="flex flex-1 justify-between sm:hidden">
-                {links[0]?.url ? (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-2 py-3">
+            {/* Record info */}
+            {meta.from !== undefined && meta.to !== undefined && (
+                <p className="text-sm text-gray-500 dark:text-gray-400 order-2 sm:order-1">
+                    {t('Showing')} <span className="font-medium">{meta.from}</span> {t('to')}{' '}
+                    <span className="font-medium">{meta.to}</span> {t('of')}{' '}
+                    <span className="font-medium">{meta.total}</span> {t('results')}
+                </p>
+            )}
+
+            {/* Page buttons */}
+            <nav className="flex items-center gap-1 order-1 sm:order-2" aria-label="Pagination">
+                {/* Prev */}
+                {links.prev ? (
                     <Link
-                        href={links[0].url}
-                        className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                        href={links.prev}
+                        className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                     >
-                        {t('Previous')}
+                        <ChevronLeft className="h-4 w-4" />
                     </Link>
                 ) : (
-                    <span className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-600">
-                        {t('Previous')}
+                    <span className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-gray-200 bg-white text-gray-300 cursor-not-allowed dark:border-gray-700 dark:bg-gray-800 dark:text-gray-600">
+                        <ChevronLeft className="h-4 w-4" />
                     </span>
                 )}
-                {links[links.length - 1]?.url ? (
+
+                {/* Page numbers */}
+                {getVisiblePages().map((page, i) =>
+                    page === '...' ? (
+                        <span key={`ellipsis-${i}`} className="inline-flex items-center justify-center h-8 w-8 text-sm text-gray-400">
+                            …
+                        </span>
+                    ) : (
+                        <Link
+                            key={page}
+                            href={buildPageUrl(page)}
+                            className={`inline-flex items-center justify-center h-8 w-8 rounded-md text-sm font-medium transition-colors ${
+                                page === meta.current_page
+                                    ? 'bg-blue-600 text-white shadow-sm'
+                                    : 'border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                            }`}
+                        >
+                            {page}
+                        </Link>
+                    )
+                )}
+
+                {/* Next */}
+                {links.next ? (
                     <Link
-                        href={links[links.length - 1].url}
-                        className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                        href={links.next}
+                        className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                     >
-                        {t('Next')}
+                        <ChevronRight className="h-4 w-4" />
                     </Link>
                 ) : (
-                    <span className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-600">
-                        {t('Next')}
+                    <span className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-gray-200 bg-white text-gray-300 cursor-not-allowed dark:border-gray-700 dark:bg-gray-800 dark:text-gray-600">
+                        <ChevronRight className="h-4 w-4" />
                     </span>
                 )}
-            </div>
-            <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                <div>
-                    <p className="text-sm text-gray-700 dark:text-gray-400">
-                        {t('Showing')} <span className="font-medium">{meta.from}</span> {t('to')}{' '}
-                        <span className="font-medium">{meta.to}</span> {t('of')}{' '}
-                        <span className="font-medium">{meta.total}</span> {t('results')}
-                    </p>
-                </div>
-                <div>
-                    <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                        {links.map((link, i) => {
-                            const isFirst = i === 0;
-                            const isLast = i === links.length - 1;
-                            const label = link.label
-                                .replace('&laquo; ', '')
-                                .replace(' &raquo;', '')
-                                .replace('Previous', '')
-                                .replace('Next', '');
-
-                            if (!link.url) {
-                                return (
-                                    <span
-                                        key={i}
-                                        className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-300 ring-1 ring-inset ring-gray-300 focus:outline-offset-0 dark:ring-gray-600 dark:text-gray-600 ${
-                                            isFirst ? 'rounded-l-md' : ''
-                                        } ${isLast ? 'rounded-r-md' : ''}`}
-                                    >
-                                        {isFirst && <ChevronLeft className="h-4 w-4" />}
-                                        {isLast && <ChevronRight className="h-4 w-4" />}
-                                        {!isFirst && !isLast && label}
-                                    </span>
-                                );
-                            }
-
-                            return (
-                                <Link
-                                    key={i}
-                                    href={link.url}
-                                    className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
-                                        link.active
-                                            ? 'z-10 bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-                                            : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-700'
-                                    } ${isFirst ? 'rounded-l-md' : ''} ${isLast ? 'rounded-r-md' : ''}`}
-                                >
-                                    {isFirst && <ChevronLeft className="h-4 w-4" />}
-                                    {isLast && <ChevronRight className="h-4 w-4" />}
-                                    {!isFirst && !isLast && label}
-                                </Link>
-                            );
-                        })}
-                    </nav>
-                </div>
-            </div>
+            </nav>
         </div>
     );
 }
