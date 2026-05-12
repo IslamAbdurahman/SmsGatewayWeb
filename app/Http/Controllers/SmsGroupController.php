@@ -97,6 +97,11 @@ class SmsGroupController extends Controller
         if (!auth()->user()->hasRole('Admin')) {
             abort_if($smsGroup->user_id !== auth()->id(), 403);
         }
+
+        if ($smsGroup->contacts()->exists()) {
+            return redirect()->back()->with('error', __('Selected group has contacts. Delete contacts first.'));
+        }
+
         $smsGroup->delete();
         return redirect()->back();
     }

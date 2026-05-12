@@ -47,6 +47,11 @@ class SmsTemplateController extends Controller
         if (!auth()->user()->hasRole('Admin')) {
             abort_if($template->user_id !== auth()->id(), 403);
         }
+
+        if ($template->history()->exists()) {
+            return redirect()->back()->with('error', __('Cannot delete template used in message history.'));
+        }
+
         $template->delete();
         return redirect()->back();
     }

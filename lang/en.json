@@ -190,5 +190,8 @@
     "Updating...": "Updating...",
     "Use [name] to personalize messages.": "Use [name] to personalize messages.",
     "Weekly Activity": "Weekly Activity",
-    "SMS Sending Completed": "SMS Sending Completed"
+    "SMS Sending Completed": "SMS Sending Completed",
+    "Selected group has contacts. Delete contacts first.": "Selected group has contacts. Delete contacts first.",
+    "Cannot delete contact with message history.": "Cannot delete contact with message history.",
+    "Cannot delete template used in message history.": "Cannot delete template used in message history."
 }

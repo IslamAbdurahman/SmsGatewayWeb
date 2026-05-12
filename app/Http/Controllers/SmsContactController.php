@@ -62,6 +62,11 @@ class SmsContactController extends Controller
         if (!auth()->user()->hasRole('Admin')) {
             abort_if($contact->group->user_id !== auth()->id(), 403);
         }
+
+        if ($contact->history()->exists()) {
+            return redirect()->back()->with('error', __('Cannot delete contact with message history.'));
+        }
+
         $contact->delete();
         return redirect()->back();
     }

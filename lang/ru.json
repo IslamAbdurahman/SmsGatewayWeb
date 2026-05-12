@@ -190,5 +190,8 @@
     "Updating...": "Обновление...",
     "Use [name] to personalize messages.": "Используйте [name] для персонализации сообщений.",
     "Weekly Activity": "Еженедельная активность",
-    "SMS Sending Completed": "Отправка SMS завершена"
+    "SMS Sending Completed": "Отправка SMS завершена",
+    "Selected group has contacts. Delete contacts first.": "В выбранной группе есть контакты. Сначала удалите контакты.",
+    "Cannot delete contact with message history.": "Нельзя удалить контакт с историей сообщений.",
+    "Cannot delete template used in message history.": "Нельзя удалить шаблон, использованный в истории сообщений."
 }
