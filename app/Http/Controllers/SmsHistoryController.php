@@ -48,9 +48,9 @@ class SmsHistoryController extends Controller
             $query->whereDate('sent_at', '<=', $to);
         }
 
-        // Filter by group (via contact's sms_group_id)
+        // Filter by group (via contact's group_id)
         if ($groupId = request('group_id')) {
-            $query->whereHas('contact', fn ($q) => $q->where('sms_group_id', $groupId));
+            $query->whereHas('contact', fn ($q) => $q->where('group_id', $groupId));
         }
 
         // Filter by template
